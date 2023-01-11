@@ -41,7 +41,6 @@ def tsProcess(siteFile, downloadPath, namePrefix):
        os.makedirs(newPath)
 
     ret = downLoadTs(siteFile, newPath, namePrefix)
-    
     if not ret:
        return
 
