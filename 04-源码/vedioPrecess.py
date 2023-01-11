@@ -59,7 +59,6 @@ def tsProcess(siteFile, downloadPath, namePrefix):
         else:
            print('其他情况')
 
-  
 if __name__ == '__main__':
    
    path = "/Users/chaoxi.ycx/ycx_work/sourecode/maotai"
