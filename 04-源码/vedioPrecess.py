@@ -3,6 +3,9 @@ import sys, os
 import requests, json
 import urllib.request
 
+
+from Crypto.Cipher import AES #使用的是 pip install pycryptodome
+
 def downLoadTs(siteFile, downloadPath, namePrefix):
     with open(siteFile, "r") as f:        
         count = 0 
