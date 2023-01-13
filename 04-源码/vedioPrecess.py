@@ -22,6 +22,7 @@ def downLoadTs(siteFile, downloadPath, namePrefix):
             try:
                 tsDownload = urllib.request.urlopen(url)
                 with open(downloadPath + "/" + namePrefix + "-"+ count + ".ts", "wb") as tsFile:
+                     #通过buffer控制每次读取的大小，防止内存爆掉
                      while True:
                           buffer = tsDownload.read(BLOCK_SIZE)
                           if not buffer:
