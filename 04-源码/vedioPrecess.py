@@ -6,6 +6,8 @@ import urllib.request
 
 from Crypto.Cipher import AES #使用的是 pip install pycryptodome
 
+BLOCK_SIZE = 256 * 1024
+
 def downLoadTs(siteFile, downloadPath, namePrefix):
     with open(siteFile, "r") as f:        
         count = 0 
@@ -19,9 +21,13 @@ def downLoadTs(siteFile, downloadPath, namePrefix):
             tsDownload = None
             try:
                 tsDownload = urllib.request.urlopen(url)
-                data = tsDownload.read()
                 with open(downloadPath + "/" + namePrefix + "-"+ count + ".ts", "wb") as tsFile:
-                    tsFile.write(data)
+                     while True:
+                          buffer = tsDownload.read(BLOCK_SIZE)
+                          if not buffer:
+                              # There is nothing more to read
+                             break
+                          tsFiles.write(buffer)
             except:
                 print("down load error, url:", url, "status:", tsDownload)
                 return False
