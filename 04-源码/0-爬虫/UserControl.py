@@ -89,22 +89,25 @@ class UserContrl:
                 return None, Errors.C_InvalidUser    
              
              userInfo = ParseJsonToObj(userInfoJson, UserInfo)
-             return userInfo
+             return userInfo, Errors.SUCCESS
           return None
        except Exception as e:
              print("parse userInfo fail ",  str(e))
              return None, Errors.S_ParseFail
 
+if len(sys.argv) < 2:
+   print(f'必须输入用户ID')
+   sys.exit()
 
-
+uid = sys.argv[1]
 userContrl = UserContrl()
-userConf = userContrl.getUserConfFromGit("vip000001")
-#userContrl.printSome("dddffd")
+userConf = userContrl.getUserConfFromGit(uid)
 print(userConf.name)
-
 
 userLogin = UserInfo("ycx", "123456", "vip000001")
 ret,error = userContrl.CheckUserValid(userConf, userLogin)
 print(f'the ret {ret}, and the meesage {error.getMessage()}')
+
+sys.exit()
 
 
