@@ -30,6 +30,10 @@ class UserInfo:
       self.email = email
       self.isActive = isActive
       self.tel = tel
+    
+    def toString(self):
+      s = json.dumps(self.__dict__) 
+      return s
 
 class UserContrl:
    
