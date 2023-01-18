@@ -14,7 +14,6 @@ class BaseError:
 
     def append(self, moreMsg):
     	self.message = f'{self.message},and {moreMsg}'
-
     	return self
 
     def toString(self):
