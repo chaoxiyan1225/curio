@@ -96,5 +96,3 @@ class SoftWareContrl:
 ctrl = SoftWareContrl()
 ret, error = ctrl.clientValid()
 print(f'the ret {ret}, and the message {error.getMessage()}')
-
-
