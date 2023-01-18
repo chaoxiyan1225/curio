@@ -27,6 +27,10 @@ class SofeWareInfo:
       self.toatalSize = toatalSize
       self.author = author
       self.clientEnable = clientEnable
+        
+   def toString(self):
+      s = json.dumps(self.__dict__) 
+      return s
 
 class SoftWareContrl:
 
