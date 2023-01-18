@@ -7,7 +7,7 @@ import base64
 from Crypto.Cipher import AES
 from io import BytesIO
 from zipfile import ZipFile
-import AesTool
+import CommonTool
 import time
 import SystemConf
 import Errors
@@ -19,27 +19,30 @@ def ParseJsonToObj(parseData, yourCls):
     return result
 
 class UserInfo:
-   def __init__(self, name = '', passwd = '', userId = '', isFree = False, start = '', end = '', isActive = False):
+   def __init__(self, name = '', passwd = '', email = '', tel = '', 
+      isFree = False, start = '', end = '', isActive = False):
+
       self.name = name
       self.passwd = passwd
       self.isFree = isFree
       self.start = start
       self.end = end
-      self.userId = userId
+      self.email = email
       self.isActive = isActive
+      self.tel = tel
 
 class UserContrl:
    
    '''
      根据用户的登陆信息判断是否合法，包括使用软件的有效期限
    '''
-   def CheckUserValid(self, userConf, userLogin):
-      if not UserInfo or not userLogin:
-         print(f'the userLogin is none or userConf is InValid.')
+   def CheckUserValid(self, userConf, userLogin = None):
+      if not userConf:
+         print(f'the userConf is InValid.')
          return  False, Errors.C_LoginFail
       
-      if userConf.name != userLogin.name or userConf.passwd != userLogin.passwd:
-         return False, Errors.C_ErrorPasswdOrName
+      #if userConf.name != userLogin.name or userConf.passwd != userLogin.passwd:
+      #   return False, Errors.C_ErrorPasswdOrName
       
       nowStr = time.strftime('%Y-%m-%d %H:%M',time.localtime(time.time()))
 
@@ -49,10 +52,9 @@ class UserContrl:
       return True, Errors.SUCCESS
 
 
-      
+   # userId 就是本机的mac地址，原则上是一个账号就对应一个mac地址
    def getUserConfFromGit(self, userId :str, projectZip = SystemConf.projectZip):
        
-       status = ""
        try:
           ssl._create_default_https_context = ssl._create_unverified_context
           headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
@@ -69,8 +71,8 @@ class UserContrl:
 
              status = ""
              return None, Errors.S_DownLoadError
+
           userConfFile = None
-          
           for file in files:
               if SystemConf.userConf in file:
                  userConfFile = file
@@ -83,6 +85,10 @@ class UserContrl:
                 return None, Errors.S_InvalidFileContent
              
              parseData = json.loads(jsonData.decode().strip('\t\n'))
+             if userId not in parseData:
+                print(f'the userId{userId} 不存在')
+                return None, Errors.C_InvalidUser.append(f'userId{userId} 不存在')    
+
              userInfoJson = parseData[userId]
              if not userInfoJson:
                 print(f'the user not register, contack XXX ') 
@@ -90,24 +96,66 @@ class UserContrl:
              
              userInfo = ParseJsonToObj(userInfoJson, UserInfo)
              return userInfo, Errors.SUCCESS
-          return None
+
+          return None, Errors.S_UnknowError
+
        except Exception as e:
-             print("parse userInfo fail ",  str(e))
-             return None, Errors.S_ParseFail
+          print("parse userInfo fail ",  str(e))
+          return None, Errors.S_ParseFail.append(f'userId:[{userId}]')
 
-if len(sys.argv) < 2:
-   print(f'必须输入用户ID')
-   sys.exit()
+   def LoginCheck(self, passwd = ''):
 
-uid = sys.argv[1]
-userContrl = UserContrl()
-userConf = userContrl.getUserConfFromGit(uid)
-print(userConf.name)
+      retryCnt = 3 
+      macId = CommonTool.get_mac_address()
+      userInfo, error = self.getUserConfFromGit(macId)
+       
+      if error == Errors.C_InvalidUser:
+          #CommonTool.sendRegisterMsg()
+          print(f'客户端:[{macId}]未注册,请先注册再使用')
+          return error
 
-userLogin = UserInfo("ycx", "123456", "vip000001")
-ret,error = userContrl.CheckUserValid(userConf, userLogin)
-print(f'the ret {ret}, and the meesage {error.getMessage()}')
+      while error == Errors.S_DownLoadError and retryCnt > 0:
+           retryCnt = retryCnt - 1
+           userInfo, error = self.getUserConfFromGit(macId)
 
-sys.exit()
+           if error == Errors.SUCCESS:
+              break
+
+      if error != Errors.SUCCESS or not userInfo:
+         print(f'请联系技术支持:{SystemConf.contackUs}, 并附加UserId:[{macId}]')
+         CommonTool.sendClientLoginFailMsg(error.toString())
+         return error
+
+      error = self.CheckUserValid(userInfo)
+       #欠费了
+      if error == Errors.C_Arrearage:
+         #需要给界面返回欠费信息
+         print(f'当前欠费，请续费，续费操作请参考:')
+         return error
+
+      print(f'登陆成功，可以使用软件')
+      return Errors.SUCCESS
 
 
+
+   def clickToRegister(self, email, tel = ''):
+
+      if not email or CommonTool.emailRight(email) == False:
+         print(f'输入的邮箱不正确或者格式错误：{email}')
+         return Errors.C_EmailWrong
+      
+      success = CommonTool.sendRegisterMsg(email) 
+      if not success:
+         print(f'第二次发送')
+         sucess = CommonTool.sendRegisterMsg(email)
+      
+      if not success:
+         return Errors.C_SendEmailFail
+
+      return  Errors.SUCCESS
+
+
+ctrl = UserContrl()
+result = ctrl.LoginCheck()
+if result == Errors.C_InvalidUser:
+   ctrl.clickToRegister('594781478@qq.com')
