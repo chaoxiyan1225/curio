@@ -12,6 +12,9 @@ import time
 import SystemConf
 import Errors
 
+from loguru import logger
+logger.add('LuPianShenQI_{time}.log',rotation="100 MB", retention='10 days')
+
 
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
@@ -62,41 +65,42 @@ class SoftWareContrl:
           with zipFile.open(softwareConfFile, 'r') as tmpFile:
              jsonData = tmpFile.read()
              if not jsonData:
-                print(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+                logger.error(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
                 return None, Errors.S_InvalidFileContent
 
              softwareJson = json.loads(jsonData.decode().strip('\t\n'))
              if not softwareJson:
-                print(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
+                logger.error(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
                 return None, Errors.S_InvalidFileContent
              softwareInfo = ParseJsonToObj(softwareJson, SofeWareInfo)
-
+             
+             logger.warn('加载系统配置完成')
              return softwareInfo, Errors.SUCCESS
           return None, Errors.S_ParseFail
        except Exception as e:
-             print(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.error(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              return None, Errors.S_ParseFail
 
    '''
      加载软件的一些基本信息使用软件的有效期限
    '''
-   def clientValid(self):
+   def clientConfValid(self):
       softWareConf, error = self.loadSoftWareInfoFromGit()
       if not softWareConf or error != Errors.SUCCESS:
-         return False, error
+         return error
 
       if softWareConf.clientEnable.lower() == 'false':
-         return False, Errors.S_Forbidden
+         return Errors.S_Forbidden
 
       if SystemConf.clientVersion <= softWareConf.currentVersion:
-         print(f'the client verion is too low, client:{SystemConf.clientVersion}. and server version: {softWareConf.currentVersion}')
-         return  False, Errors.C_VersionTooLow
+         lgoger.error(f'the client verion is too low, client:{SystemConf.clientVersion}. and server version: {softWareConf.currentVersion}')
+         return  Errors.C_VersionTooLow
       
 
-      return True, Errors.SUCCESS
+      return Errors.SUCCESS
       
 
 
 ctrl = SoftWareContrl()
-ret, error = ctrl.clientValid()
-print(f'the ret {ret}, and the message {error.getMessage()}')
+rerror = ctrl.clientConfValid()
+print(f'the message {error.getMessage()}')

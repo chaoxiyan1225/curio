@@ -11,6 +11,10 @@ from bs4 import BeautifulSoup
 
 signal.signal(signal.SIGINT, multitasking.killall)
 
+from loguru import logger
+
+logger.add('LuPianShenQI_{time}.log',rotation="100 MB", retention='10 days')
+
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 
@@ -28,7 +32,7 @@ headers={
    该类用来处理TS格式的视频文件下载
    支持多线程模式
 '''
-class  TsVedioProcesser:
+class  VedioDownLoadProcesser:
 
     def __init__(self, threadCnt = default_thread_cnt, blockSize = BLOCK_SIZE):
         self.threadCnt = threadCnt
@@ -41,7 +45,7 @@ class  TsVedioProcesser:
     '''
     def init(self):
 
-        print(f'------初始化系统配置：start-----------')
+        logger.warning(f'------初始化系统配置：start-----------')
         global download_path
         download_path = os.path.join(os.getcwd(), "download")
         if not os.path.exists(download_path):
@@ -55,7 +59,7 @@ class  TsVedioProcesser:
         global download_ts
         download_ts = os.path.join(download_path, "tsfile")
         os.mkdir(download_ts)
-        print(f'------初始化系统配置：end-----------')
+        logger.warning(f'------初始化系统配置：end-----------')
     '''
     按线程数和下载列表去划分任务到多个线程中      
     '''
@@ -64,7 +68,6 @@ class  TsVedioProcesser:
         taskList = []
         totalFileSize = 0
         
-        #print(f'urlList: {urlList}')
         for i in range(useThreadCnt):
             taskList.append({})
             
@@ -87,7 +90,7 @@ class  TsVedioProcesser:
     #多线程方式去下载TS文件
     def downloadTsFiles(self, urlList: list, retry_times: int = 3) -> None:
 
-        print(f'一共待下载的ts文件数：{len(urlList)}')
+        logger.warning(f'一共待下载的ts文件数：{len(urlList)}')
         
         start = time.time()
         #先把任务分组
@@ -142,7 +145,7 @@ class  TsVedioProcesser:
         bar.close()
         
         totalCost = (time.time() - start) / 60
-        print(f'下载任务结束，总计下载耗时:%.1f 分钟' % totalCost)
+        logger.warning(f'下载任务结束，总计下载耗时:%.1f 分钟' % totalCost)
         
     def mergeTs2MP4(self, mp4FileName:str)->None:
 
@@ -172,7 +175,7 @@ class  TsVedioProcesser:
         fs = os.listdir(download_ts)
         fs.sort(key= lambda x:int(x[:-3]))
         
-        print(f'一共下载成功的ts文件数目是：{len(fs)}')
+        logger.warning(f'开始转为mp4，待转换TS文件数量：{len(fs)}')
         
         mp4Name = os.path.join(download_path, mp4FileName + ".mp4")
         mp4f = open(mp4Name, "ab")
@@ -184,13 +187,13 @@ class  TsVedioProcesser:
             if os.path.isfile(tmp):
                ret2 = ts2MP4(tmp, mp4FileName)
                if not ret2:
-                  print("ts2MP4 fail, filename:", tmp)
+                  logger.error("ts2MP4 fail, filename:", tmp)
                   continue
 
             elif os.path.isdir(tmp):
                func(tmp) # 递归去获取
             else:
-               print('其他情况')
+               logger.warning('其他情况')
                
         mp4f.close()    
         bar.close()
@@ -198,11 +201,14 @@ class  TsVedioProcesser:
         #清除临时的TS文件
         os.chdir(download_ts)
         os.system('del /Q *.ts')
+        
+        logger.warning('转换结束')
 
 
     #解析超链接打开页面后的子超链接
     def parseSubUrls(self, url):
   
+        logger.warning(f'需要预解析URL：{url}')
         req = urllib.request.Request(url, headers = headers)
         webpage = urllib.request.urlopen(req)
         html = webpage.read()
@@ -249,6 +255,8 @@ class  TsVedioProcesser:
                      
                   if url and  '.mp4' in url:
                      resultMp4.add(url)
+                     
+        logger.warning('预解析结束')
 
         return resultM3u8, resultMp4
 
@@ -258,7 +266,7 @@ class  TsVedioProcesser:
         all_content = requests.get(url, headers = headers).text  # 获取第一层M3U8文件内容
         m3u8File = download_path + "\site.m3u8"
         
-        print(f'm3u8文件的保存路径： {m3u8File}')
+        logger.warning(f'm3u8文件的保存路径： {m3u8File}')
         
         with open(m3u8File, "wb") as file:
              file.write(all_content.encode())
@@ -284,7 +292,7 @@ class  TsVedioProcesser:
                    
                    res = requests.get(key_url)
                    self.key = res.content
-                print(f'ts文件的加密 key:{self.key}')
+                logger.warning(f'ts文件的加密 key:{self.key}')
                 
             if "#" not in line and 'http' in line: # 找ts地址并下载
                 unknow = False
@@ -292,9 +300,10 @@ class  TsVedioProcesser:
                 allTsFiles.append(pd_url)
                 
         if unknow:
+            logger.error('未来找到对于的TS文件URL，程序异常')
             raise BaseException("未找到对应的TS文件URL")
         else:
-            print("ts文件的URL解析完成")
+            logger.warning("ts文件的URL解析完成")
         
         #多线程下载TS files
         self.downloadTsFiles(allTsFiles, 3)
@@ -310,6 +319,7 @@ class  TsVedioProcesser:
         m3u8Ulrs = set()
         mp4Urls = set()
         if '.m3u8' in url:
+           print(f'原始URL只含一个视频文件{url}')
            self.download1By1(url, f'{mp4Name}')
         else:
            m3u8Ulrs, mp4Urls = self.parseSubUrls(url)        
@@ -317,7 +327,7 @@ class  TsVedioProcesser:
              print(f'url{url},无法解析出 m3u8链接或者mp4链接')
              return
             
-        #print(m3u8Ulrs)
+        print(f'the url:{url}，共含m3u8文件{len(m3u8Ulrs)}, mp4的文件个数{len(mp4Urls)}')
         #串行一一下载
         count = 0
         for url in m3u8Ulrs:
@@ -337,7 +347,7 @@ class  TsVedioProcesser:
 if __name__ == '__main__': 
 
     start = time.time()
-    tsProcess = TsVedioProcesser()
+    downLoad = VedioDownLoadProces()
     url = "https://better.ccgg6.com/archives/19830/" 
     tsProcess.downLoadStart(url, "永赢基金-蔺抒涵")
     
