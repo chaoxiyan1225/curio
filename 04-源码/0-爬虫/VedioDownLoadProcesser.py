@@ -18,7 +18,6 @@ logger.add('LuPianShenQI_{time}.log',rotation="100 MB", retention='10 days')
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 
-key = ""
 download_path = ""
 download_ts = ""
 default_thread_cnt = 8
@@ -115,8 +114,8 @@ class  VedioDownLoadProcesser:
                 req = urllib.request.Request(url, headers = headers)
                 urlfile = urllib.request.urlopen(req)
                 cryptor = None
-                if len(key): # AES 解密
-                   cryptor = AES.new(key, AES.MODE_CBC, key)
+                if len(self.key): # AES 解密
+                   cryptor = AES.new(self.key, AES.MODE_CBC, self.key)
                 
                 tsName = os.path.join(download_ts, str(index) + ".ts")
                 with open(tsName, 'ab') as tsFile:
@@ -282,7 +281,7 @@ class  VedioDownLoadProcesser:
                 method_pos = line.find("METHOD")
                 comma_pos = line.find(",")
                 method = line[method_pos:comma_pos].split('=')[1]
-                print("Decode Method：", method)
+                logger.warning("Decode Method：", method)
                 
                 if not self.key:
                    uri_pos = line.find("URI")
