@@ -260,7 +260,6 @@ if __name__ == '__main__':
     url = "https://long.lgtcpnb.cn/videos1/b379cf0988f4e9147efe341e8dc1b988/b379cf0988f4e9147efe341e8dc1b988.m3u8" 
     downLoadPrecess(url, "空姐")
     end = time.time()
-    
     totalCost = (end - start) / 60
     
     print(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
