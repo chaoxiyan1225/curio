@@ -140,8 +140,6 @@ class UserContrl:
       print(f'登陆成功，可以使用软件')
       return Errors.SUCCESS
 
-
-
    def clickToRegister(self, email, tel = ''):
 
       if not email or CommonTool.emailRight(email) == False:
@@ -157,9 +155,3 @@ class UserContrl:
          return Errors.C_SendEmailFail
 
       return  Errors.SUCCESS
-
-
-ctrl = UserContrl()
-result = ctrl.LoginCheck()
-if result == Errors.C_InvalidUser:
-   ctrl.clickToRegister('594781478@qq.com')
