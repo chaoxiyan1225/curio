@@ -111,16 +111,14 @@ class Download(ShenQiWidget):
            self.result = False
            return
 
-        
         result = self.userCtrl.LoginCheck()
-
         if result == Errors.C_InvalidUser:
            QMessageBox.question(self, "错误提示", "您还未注册，请点击右上角一键注册", QMessageBox.StandardButton.Yes) 
            self.result = False
-        else if result == Errors.C_Arrearage:
+        elif result == Errors.C_Arrearage:
            QMessageBox.question(self, "错误提示", "您已欠费请续费", QMessageBox.StandardButton.Yes)
            self.result = False
-        else if result != Errors.SUCCESS:
+        elif result != Errors.SUCCESS:
            QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
            self.result = False
 
@@ -129,16 +127,13 @@ class Download(ShenQiWidget):
         if result == Errors.S_Forbidden:
            QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
            self.result = False
-        else if result  != Errors.SUCCESS: 
+        elif result  != Errors.SUCCESS: 
            QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
            self.result = False 
-
+            
         self.downLoadind(url)
-
     def downLoadind(self, url):
-
         self.downloadP.downLoadStart(url)
-
         #设置初始进度条为0
         self.progerss_value = 0
         self.percent.setText('0/100')
@@ -182,11 +177,8 @@ class Download(ShenQiWidget):
         self.splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
         self.splash.setEnabled(False)
         self.progressBar = QProgressBar(self.splash)
-
         self.progressBar.setValue(0)
-
         self.progerss_value = 0 
-
 
         layout1 = QHBoxLayout()
         layout1.addWidget(self.file_label)
@@ -213,16 +205,11 @@ class Download(ShenQiWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.progress)
         # TIMER IN MILLISECONDS
-        
-
         self.setLayout(layout)
         self.file_button.clicked.connect(self.startDownLoad)
         self.timer.timeout.connect(self.freshProgress)
 
-
-
 class MainWindow(QMainWindow):
-    
    def __init__(self):
         super().__init__()
 
@@ -247,7 +234,6 @@ def main(self):
     app.exec()
    
 if __name__ == "__main__":
-    print ('This is main of module "hello.py"')
+    print ('开启撸片之旅')
     main()
-    print(__name__+'from hello.main')
-      
+    print('撸片之旅结束')
