@@ -96,11 +96,4 @@ class SoftWareContrl:
          lgoger.error(f'the client verion is too low, client:{SystemConf.clientVersion}. and server version: {softWareConf.currentVersion}')
          return  Errors.C_VersionTooLow
       
-
       return Errors.SUCCESS
-      
-
-
-ctrl = SoftWareContrl()
-rerror = ctrl.clientConfValid()
-print(f'the message {error.getMessage()}')
