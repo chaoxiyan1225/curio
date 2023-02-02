@@ -341,8 +341,7 @@ class  VedioDownLoadProcesser:
         os.system('del /Q *.mp4')
         os.rename("new.tmp", "new.mp4")
 
-
-  
+'''
 if __name__ == '__main__': 
 
     start = time.time()
@@ -357,3 +356,4 @@ if __name__ == '__main__':
     print(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
     
     #merge_file("E:\\sourcecode\\download\\20230114_212551\\tsfile")
+'''
