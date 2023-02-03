@@ -3,7 +3,12 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 import UserUITool
 import sys, platform, random
-import UserControl, SystemContrl, Errors
+
+from SystemContrl import *
+from UserControl import *
+from VedioDownLoadProcesser import *
+
+import Errors
 
 class ShenQiWidget(QWidget): 
 
@@ -11,10 +16,9 @@ class ShenQiWidget(QWidget):
         super(ShenQiWidget, self).__init__()          
         #self.setAutoFillBackground(True) 
 
-
-        self.userCtrl = UserControl()
+        self.userCtrl = UserContrl()
         self.sysCtrl = SoftWareContrl()
-        self.downloadP = VedioDownLoadProces()
+        self.downloadP = VedioDownLoadProcesser()
 
         background_color = QColor()
         background_color.setNamedColor('#282821')
@@ -108,32 +112,42 @@ class Download(ShenQiWidget):
 
         if isValid == False:
            QMessageBox.question(self, "错误提示", "下载地址不正确请重新输入", QMessageBox.StandardButton.Yes) 
-           self.result = False
+           self.preCheckResult = False
            return
 
+        
         result = self.userCtrl.LoginCheck()
+
         if result == Errors.C_InvalidUser:
            QMessageBox.question(self, "错误提示", "您还未注册，请点击右上角一键注册", QMessageBox.StandardButton.Yes) 
-           self.result = False
+           self.preCheckResult = False
+           return
         elif result == Errors.C_Arrearage:
            QMessageBox.question(self, "错误提示", "您已欠费请续费", QMessageBox.StandardButton.Yes)
-           self.result = False
+           self.preCheckResult = False
+           return
         elif result != Errors.SUCCESS:
            QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
-           self.result = False
+           self.preCheckResult = False
+           return 
 
-        result = self.sysCtrl.clientConfValid()
+        result = self.sysCtrl.clientValid()
 
         if result == Errors.S_Forbidden:
            QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
-           self.result = False
+           self.preCheckResult = False
         elif result  != Errors.SUCCESS: 
            QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
-           self.result = False 
-            
+           self.preCheckResult = False 
+
+        self.preCheckResult = true
+
         self.downLoadind(url)
+
     def downLoadind(self, url):
+
         self.downloadP.downLoadStart(url)
+
         #设置初始进度条为0
         self.progerss_value = 0
         self.percent.setText('0/100')
@@ -177,8 +191,11 @@ class Download(ShenQiWidget):
         self.splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
         self.splash.setEnabled(False)
         self.progressBar = QProgressBar(self.splash)
+
         self.progressBar.setValue(0)
+
         self.progerss_value = 0 
+
 
         layout1 = QHBoxLayout()
         layout1.addWidget(self.file_label)
@@ -195,6 +212,7 @@ class Download(ShenQiWidget):
         layout2.addWidget(self.percent)
 
         layout3 = QVBoxLayout()
+        layout3.addWidget(QLabel(''))
         layout3.addWidget(self.splash)
         layout3.addLayout(layout2)
 
@@ -203,13 +221,13 @@ class Download(ShenQiWidget):
         layout.addLayout(layout3)
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.progress)
-        # TIMER IN MILLISECONDS
         self.setLayout(layout)
         self.file_button.clicked.connect(self.startDownLoad)
         self.timer.timeout.connect(self.freshProgress)
 
+
 class MainWindow(QMainWindow):
+    
    def __init__(self):
         super().__init__()
 
@@ -226,7 +244,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(tabs)
         
-def main(self):
+def main():
     # 整个app的入口    
     app = QApplication(sys.argv)
     window = MainWindow()
