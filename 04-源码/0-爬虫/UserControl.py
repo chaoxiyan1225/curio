@@ -30,8 +30,8 @@ class UserInfo:
       self.email = email
       self.isActive = isActive
       self.tel = tel
-    
-    def toString(self):
+
+   def toString(self):
       s = json.dumps(self.__dict__) 
       return s
 
@@ -65,7 +65,7 @@ class UserContrl:
           req = urllib.request.Request(SystemConf.projectZip, headers=headers)
           
           #print(f'print headers {headers}')
-          userRead = urllib.request.urlopen(req)
+          userRead = urllib.request.urlopen(req, timeout=6)
           data = userRead.read()
           #print(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
@@ -137,8 +137,9 @@ class UserContrl:
          print(f'当前欠费，请续费，续费操作请参考:')
          return error
 
-      print(f'登陆成功，可以使用软件')
+      print(f'登陆成功，可以使用软件, {userInfo.toString()}')
       return Errors.SUCCESS
+
 
    def clickToRegister(self, email, tel = ''):
 
@@ -146,12 +147,19 @@ class UserContrl:
          print(f'输入的邮箱不正确或者格式错误：{email}')
          return Errors.C_EmailWrong
       
-      success = CommonTool.sendRegisterMsg(email) 
+      success = CommonTool.sendRegisterMsg(email, tel) 
       if not success:
          print(f'第二次发送')
-         sucess = CommonTool.sendRegisterMsg(email)
+         sucess = CommonTool.sendRegisterMsg(email, tel)
       
       if not success:
          return Errors.C_SendEmailFail
 
       return  Errors.SUCCESS
+
+'''
+ctrl = UserContrl()
+result = ctrl.LoginCheck()
+if result == Errors.C_InvalidUser:
+   ctrl.clickToRegister('594781478@qq.com')
+'''
