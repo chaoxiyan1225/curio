@@ -67,10 +67,10 @@ def get_mac_address():
     return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
 
-def sendRegisterMsg(email:str = ''):
+def sendRegisterMsg(email:str = '', tel:str = ''):
     mac = get_mac_address()
     subject = f'【撸片神器注册消息】来自:[{mac}]'
-    content = f'【1】当前用户发起新注册请求，请及时处理。\n   (1)对端的邮箱:{email} \n   (3)mac 地址[{mac}]'
+    content = f'【1】当前用户发起新注册请求，请及时处理。\n   (1)对端的邮箱:{email}  \n   (2)对端手机号:{tel} \n   (3)mac 地址[{mac}]'
     return sendMailByWangyi(subject, content)
 
 
