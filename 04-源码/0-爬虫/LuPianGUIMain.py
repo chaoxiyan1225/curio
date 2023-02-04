@@ -19,6 +19,9 @@ class ShenQiWidget(QWidget):
         self.userCtrl = UserContrl()
         self.sysCtrl = SoftWareContrl()
         self.downloadP = VedioDownLoadProcesser()
+        self.validPeriod = 3600 
+        self.lastValidTime = 0
+        self.LoginValid = False
 
         background_color = QColor()
         background_color.setNamedColor('#282821')
@@ -55,12 +58,97 @@ class ShenQiWidget(QWidget):
         self.move(self.win_rect.center)         # 移动窗口与窗口矩形重合
 
 
+class Register(ShenQiWidget):
+
+    def checkValid(self):
+
+        email = self.email.text()        
+        isValid = UserUITool.IsValidEmail(email)
+
+        if isValid == False:
+            QMessageBox.question(self, "错误提示", "输入的邮箱非法", QMessageBox.StandardButton.Yes) 
+            self.preCheckResult = False
+            return False
+
+        tel = self.tel.text()        
+        isValid = UserUITool.IsValidTel(tel)
+
+        if isValid == False:
+            QMessageBox.question(self, "错误提示", "输入的手机号非法", QMessageBox.StandardButton.Yes) 
+            self.preCheckResult = False
+            return False
+
+        return True
+
+
+    def sendMsg4Register(self):
+
+        isValid = self.checkValid()
+        if isValid == False:
+            return
+
+        #text, ok = QInputDialog.getText(self, '用户注册提示界面', '输入邮箱')
+
+        isSend = self.userCtrl.clickToRegister(self.email.text(), self.tel.text())
+        if isSend == Errors.SUCCESS:
+           QMessageBox.question(self, "成功提示", "您的注册申请{成功}注意查收邮件", QMessageBox.StandardButton.Yes) 
+           return True
+
+        QMessageBox.question(self, "错误提示", "您的注册申请{失败}请稍后重试", QMessageBox.StandardButton.Yes) 
+        return False
+
+
+    def initUI(self):
+
+        self.setWindowTitle("当前位于注册界面")
+        self.resize(1000,600)
+        self.progressValue = 0
+
+        self.email_label = QLabel("您的邮箱*:")
+        self.email = QLineEdit("")
+        self.email.resize(80, 40)
+        self.email.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
+        
+        self.tel_label = QLabel('您的手机号*:')
+        self.tel = QLineEdit("")
+        self.tel.resize(80, 40)
+        self.tel.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
+
+
+        self.register_button = QPushButton("点我注册")
+        self.register_button.resize(80, 40)
+        
+        splash_pix = QPixmap('./dq.png')
+
+        splash = QSplashScreen(splash_pix, Qt.WindowType.WindowStaysOnTopHint)
+        splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
+        splash.setEnabled(False)
+     
+
+        layout1 = QHBoxLayout()
+        layout1.addWidget(self.email_label)
+        layout1.addWidget(self.email)
+
+        layout2 = QHBoxLayout()
+        layout2.addWidget(self.tel_label)
+        layout2.addWidget(self.tel)
+
+        layout = QVBoxLayout()
+        layout.addLayout(layout1)
+        layout.addLayout(layout2)
+        layout.addWidget(self.register_button)
+        layout.addWidget(splash)
+
+        self.setLayout(layout)
+        self.register_button.clicked.connect(self.sendMsg4Register)
+
+
 class BuyNow(ShenQiWidget):
 
     def initUI(self):
 
         self.setWindowTitle("当前位于续费界面")
-        self.resize(1600,800)
+        self.resize(1000,600)
 
         self.text = QTextEdit()
 
@@ -98,13 +186,44 @@ class BuyNow(ShenQiWidget):
         self.setLayout(layout)
 
 
-        '''
-        text, ok = QInputDialog.getText(self, 'Input Dialog', 'Enter your name:')
-        if ok:
-            self.le.setText(str(text))
-        '''
-
 class Download(ShenQiWidget):
+
+    def CheckValid(self):
+        
+        if self.LoginValid == True and (timer.time() - self.lastValidTime)  < self.validPeriod:
+            return True
+
+        result = self.userCtrl.LoginCheck()
+        if result == Errors.C_InvalidUser:
+           QMessageBox.question(self, "错误提示", "您还未注册，请点击右上角一键注册", QMessageBox.StandardButton.Yes) 
+           self.preCheckResult = False
+           return False
+
+        elif result == Errors.C_Arrearage:
+           QMessageBox.question(self, "错误提示", "您已欠费请续费", QMessageBox.StandardButton.Yes)
+           self.preCheckResult = False
+           return
+        elif result != Errors.SUCCESS:
+           QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
+           self.preCheckResult = False
+           return False
+
+        result = self.sysCtrl.clientValid()
+
+        if result == Errors.S_Forbidden:
+           QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
+           self.preCheckResult = False
+           return False
+
+        elif result  != Errors.SUCCESS: 
+           QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
+           self.preCheckResult = False 
+           return False
+
+        self.LoginValid = True
+        self.lastValidTime = time.time()
+        return True
+
 
     def startDownLoad(self):
         url = self.file_url.text()        
@@ -115,33 +234,11 @@ class Download(ShenQiWidget):
            self.preCheckResult = False
            return
 
-        
-        result = self.userCtrl.LoginCheck()
-
-        if result == Errors.C_InvalidUser:
-           QMessageBox.question(self, "错误提示", "您还未注册，请点击右上角一键注册", QMessageBox.StandardButton.Yes) 
-           self.preCheckResult = False
-           return
-        elif result == Errors.C_Arrearage:
-           QMessageBox.question(self, "错误提示", "您已欠费请续费", QMessageBox.StandardButton.Yes)
-           self.preCheckResult = False
-           return
-        elif result != Errors.SUCCESS:
-           QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
-           self.preCheckResult = False
+        isValid = self.CheckValid()
+        if isValid == False:
            return 
-
-        result = self.sysCtrl.clientValid()
-
-        if result == Errors.S_Forbidden:
-           QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
-           self.preCheckResult = False
-        elif result  != Errors.SUCCESS: 
-           QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
-           self.preCheckResult = False 
-
+        
         self.preCheckResult = true
-
         self.downLoadind(url)
 
     def downLoadind(self, url):
@@ -167,7 +264,7 @@ class Download(ShenQiWidget):
     def initUI(self):
 
         self.setWindowTitle("当前位于下载界面")
-        self.resize(1600,800)
+        self.resize(1000,600)
         self.progressValue = 0
 
         self.file_label = QLabel("请输入下载URL")
@@ -195,7 +292,6 @@ class Download(ShenQiWidget):
         self.progressBar.setValue(0)
 
         self.progerss_value = 0 
-
 
         layout1 = QHBoxLayout()
         layout1.addWidget(self.file_label)
@@ -231,7 +327,7 @@ class MainWindow(QMainWindow):
    def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("撸片神器")
+        self.setWindowTitle("撸片神器-V2.0.6.8")
         self.resize(800,  600)  
 
         tabs = QTabWidget()
@@ -241,6 +337,8 @@ class MainWindow(QMainWindow):
         tabs.addTab(Download("./dl.png"), "点我撸片")
         tabs.addTab(ShenQiWidget("./ld.png"), "经典推荐")
         tabs.addTab(BuyNow("./rg.png"), "续费入口")
+        tabs.addTab(Register("./rg.png"), "一键注册")
+
 
         self.setCentralWidget(tabs)
         
