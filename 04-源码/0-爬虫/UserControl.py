@@ -12,7 +12,6 @@ import time
 import SystemConf
 import Errors
 
-
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
     result.__dict__ = parseData
@@ -139,7 +138,6 @@ class UserContrl:
 
       print(f'登陆成功，可以使用软件, {userInfo.toString()}')
       return Errors.SUCCESS
-
 
    def clickToRegister(self, email, tel = ''):
 
