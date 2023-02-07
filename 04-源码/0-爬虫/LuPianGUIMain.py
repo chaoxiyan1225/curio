@@ -30,25 +30,16 @@ class ShenQiWidget(QWidget):
         palette = QPalette()
         palette.setColor(QPalette.ColorRole.Window, background_color)
         self.setPalette(palette)
-
-        '''    
-        palette = self.palette()        
-        palette.setColor(QPalette.ColorRole.Window, QColor(color))       
-        self.setPalette(palette)
-        '''
         self.path = path
         self.initUI()
-
 
     def initUI(self):
         pass
 
     def paintEvent(self, event):
-        
         painter = QPainter(self)
         pixmap = QPixmap(self.path)
         painter.drawPixmap(self.rect(), pixmap)
-        
 
     def center(self):
         """居中显示"""
@@ -57,11 +48,63 @@ class ShenQiWidget(QWidget):
         self.win_rect.moveCenter(self.screen_center)      # 移动窗口矩形到屏幕中心
         self.move(self.win_rect.center)         # 移动窗口与窗口矩形重合
 
+#经典推荐入口
+class AdviceUrls(ShenQiWidget):
+
+    def initUI(self):
+
+            self.setWindowTitle("当前位于经典推荐页面")
+            self.resize(1000,600)
+            self.text = QTextEdit()
+            self.text.setStyleSheet("QTextEdit{background-color:rgba(0,0,0,0); border:0px;}")
+
+            urlsStr = ''
+            urls, code = self.sysCtrl.getAllUrlsArray()
+            if code != Errors.SUCCESS:  
+                QMessageBox.question(self, "错误提示", "获取经典推荐信息错误", QMessageBox.StandardButton.Yes) 
+                self.preCheckResult = False
+                return
+
+            for url in urls:
+                id1=url.id.ljust(6, '_')
+                name1=url.name.ljust(10, '_')
+                des1=url.descript.ljust(16, '_')
+                urlsStr =f'{urlsStr}<li>编号:<font color="blue">{id1}</font>| 名称:<font color="blue">{name1}</font> | 简介:<font color="blue">{des1}</font> | 网址:<font color="blue">{url.url}</font>\n'
+
+            str = f'<html>\
+            <head>\
+            <title>当前位于经典推荐页面</title>\
+            </head>\
+            <body>\
+            <h1><font color="yellow">推荐资源列表</font></h1>\
+            <ul>\
+              {urlsStr}\
+            </ul>\
+            <br>\
+            <br>\
+            <h1><font color="yellow">版权声明:<font color="red"><strong>您必须是VIP注册用户</strong></font></font></h1>\
+              <div>\
+                <ul>\
+                   <li>1.不得私自转售</li>\
+                   <li>2.不得上传到其他平台</li>\
+                </ul>\
+                <br/>\
+                <br>\
+               </div>\
+            </body>\
+            </html>'
+
+            self.text.setHtml(str)
+            layout1 = QHBoxLayout()
+            layout1.addWidget(self.text)
+
+            layout = QVBoxLayout()
+            layout.addLayout(layout1)
+            self.setLayout(layout)
+
 
 class Register(ShenQiWidget):
-
     def checkValid(self):
-
         email = self.email.text()        
         isValid = UserUITool.IsValidEmail(email)
 
@@ -335,10 +378,9 @@ class MainWindow(QMainWindow):
         tabs.setMovable(False)
 
         tabs.addTab(Download("./dl.png"), "点我撸片")
-        tabs.addTab(ShenQiWidget("./ld.png"), "经典推荐")
-        tabs.addTab(BuyNow("./rg.png"), "续费入口")
+        tabs.addTab(AdviceUrls("./ld.png"), "经典推荐")
+        tabs.addTab(BuyNow("./buy.png"), "续费入口")
         tabs.addTab(Register("./rg.png"), "一键注册")
-
 
         self.setCentralWidget(tabs)
         
