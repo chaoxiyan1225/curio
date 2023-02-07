@@ -3,6 +3,7 @@
 projectZip = 'https://github.com/chaoxiyan1225/vedioprocess/archive/refs/heads/main.zip'
 userConf = 'users.conf'
 softwareConf = 'software.conf'
+adviceurlConf = 'adviceurl.json'
 contackQQ = '59478148'
 email = 'chaoxiyan1225@163.com'
 newSoftWareZip = ''
@@ -11,5 +12,3 @@ emailFrom = email
 emailPwd = 'VxqRl8Zr1ekcTvzxSndoUw=='
 emailSender = 'SPEEEEEEED'
 contackUs = f'QQ:{contackQQ} , email:{email}'
-
-
