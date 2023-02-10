@@ -27,69 +27,6 @@ headers={
         'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
 MB = 1024**2
 
-class Mp4DownLoader:
-
-    def split(start: int, end: int, step: int) -> list[tuple[int, int]]:
-        # 分多块
-        parts = [(start, min(start+step, end))
-                 for start in range(0, end, step)]
-        return parts
-
-    def get_file_size(url: str, raise_error: bool = False) -> int:
-        response = requests.head(url)
-        file_size = response.headers.get('Content-Length')
-        if file_size is None:
-            if raise_error is True:
-                raise ValueError('该文件不支持多线程分段下载！')
-            return file_size
-        return int(file_size)
-
-    def download(url: str, file_name: str, retry_times: int = 3, each_size=16*MB) -> None:
-
-        #最终MP4文件的文件名
-        mp4Name = os.path.join(download_path, file_name + ".mp4")
-        f = open(mp4Name, 'ab')
-        file_size = get_file_size(url)
-
-        @retry(tries=retry_times)
-        @multitasking.task
-        def start_download(start: int, end: int) -> None:
-            _headers = headers.copy()
-            # 分段下载的核心
-            _headers['Range'] = f'bytes={start}-{end}'
-            # 发起请求并获取响应（流式）
-            response = session.get(url, headers=_headers, stream=True)
-            # 每次读取的流式响应大小
-            chunk_size = 128
-            # 暂存已获取的响应，后续循环写入
-            chunks = []
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                # 暂存获取的响应
-                chunks.append(chunk)
-                # 更新进度条
-                bar.update(chunk_size)
-            f.seek(start)
-            for chunk in chunks:
-                f.write(chunk)
-            # 释放已写入的资源
-            del chunks
-
-        session = requests.Session()
-        # 分块文件如果比文件大，就取文件大小为分块大小
-        each_size = min(each_size, file_size)
-
-        # 分块
-        parts = split(0, file_size, each_size)
-        print(f'分块数：{len(parts)}')
-        # 创建进度条
-        bar = tqdm(total=file_size, desc=f'下载文件：{file_name}')
-        for part in parts:
-            start, end = part
-            start_download(start, end)
-        # 等待全部线程结束
-        multitasking.wait_for_tasks()
-        f.close()
-        bar.close()
 
 '''
    该类用来处理TS格式的视频文件下载
@@ -101,7 +38,9 @@ class  VedioDownLoadProcesser:
         self.threadCnt = threadCnt
         self.blockSize = blockSize
         self.key = None
-
+        self.downSuccess = 0
+        self.downTotal = 0
+        self.lock = threading.Lock()
 
     '''
     初始化函数，创建临时路径等
@@ -123,6 +62,89 @@ class  VedioDownLoadProcesser:
         download_ts = os.path.join(download_path, "tsfile")
         os.mkdir(download_ts)
         logger.warning(f'------初始化系统配置：end-----------')
+
+    class Mp4DownLoader:
+
+        def __init__(self, vedioDownLoader):
+            self.vedioDownLoader = vedioDownLoader
+            self.vedioDownLoader.lock.acquire()
+            self.vedioDownLoader.downSuccess = 0
+            self.vedioDownLoader.downTotal = 0
+            self.vedioDownLoader.lock.release()
+
+        def split(start: int, end: int, step: int) -> list[tuple[int, int]]:
+            # 分多块
+            parts = [(start, min(start+step, end))
+                     for start in range(0, end, step)]
+            self.vedioDownLoader.lock.acquire()
+            self.vedioDownLoader.downTotal = len(parts)
+            self.vedioDownLoader.lock.release()
+            return parts
+
+        def get_file_size(url: str, raise_error: bool = False) -> int:
+            response = requests.head(url)
+            file_size = response.headers.get('Content-Length')
+            if file_size is None:
+                if raise_error is True:
+                    raise ValueError('该文件不支持多线程分段下载！')
+                return file_size
+            return int(file_size)
+
+        def download(url: str, file_name: str, retry_times: int = 3, each_size=16*MB) -> None:
+
+            #最终MP4文件的文件名
+            mp4Name = os.path.join(download_path, file_name + ".mp4")
+            f = open(mp4Name, 'ab')
+            file_size = get_file_size(url)
+
+            @retry(tries=retry_times)
+            @multitasking.task
+            def start_download(start: int, end: int) -> None:
+                _headers = headers.copy()
+                # 分段下载的核心
+                _headers['Range'] = f'bytes={start}-{end}'
+                # 发起请求并获取响应（流式）
+                response = session.get(url, headers=_headers, stream=True)
+                # 每次读取的流式响应大小
+                chunk_size = 128
+                # 暂存已获取的响应，后续循环写入
+                chunks = []
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    # 暂存获取的响应
+                    chunks.append(chunk)
+                    # 更新进度条
+                    bar.update(chunk_size)
+                    self.vedioDownLoader.lock.acquire()
+                    self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + 1
+                    self.vedioDownLoader.lock.release()
+
+                f.seek(start)
+                for chunk in chunks:
+                    f.write(chunk)
+                # 释放已写入的资源
+                del chunks
+
+            session = requests.Session()
+            # 分块文件如果比文件大，就取文件大小为分块大小
+            each_size = min(each_size, file_size)
+
+            # 分块
+            parts = split(0, file_size, each_size)
+            print(f'分块数：{len(parts)}')
+            # 创建进度条
+            bar = tqdm(total=file_size, desc=f'下载文件：{file_name}')
+            for part in parts:
+                start, end = part
+                start_download(start, end)
+            # 等待全部线程结束
+            multitasking.wait_for_tasks()
+            f.close()
+            bar.close()
+
+    #返回百分比整数
+    def getPercent(self):
+        return int((self.downSuccess * 100) / self.downTotal)
+
     '''
     按线程数和下载列表去划分任务到多个线程中      
     '''
@@ -154,6 +176,7 @@ class  VedioDownLoadProcesser:
     def downloadTsFiles(self, urlList: list, retry_times: int = 3) -> None:
 
         logger.warning(f'一共待下载的ts文件数：{len(urlList)}')
+        self.downTotal = len(urlList)
         
         start = time.time()
         #先把任务分组
@@ -194,6 +217,9 @@ class  VedioDownLoadProcesser:
                         tsFile.write(content)
                         tsFile.flush()
                     bar.update(1)
+                    self.lock.acquire()
+                    self.downSuccess = self.downSuccess + 1
+                    self.lock.release()
                     tsFile.close()
             
         
@@ -326,7 +352,7 @@ class  VedioDownLoadProcesser:
 
     # 如果是Mp4格式的视频，可能要切分片去下载
     def mp4DownLoad1By1(self, url, mp4FileName):
-        mp4Down = Mp4DownLoader()
+        mp4Down = self.Mp4DownLoader(self)
         mp4Down.download(url, mp4FileName)
 
     
@@ -384,6 +410,8 @@ class  VedioDownLoadProcesser:
     def downLoadStart(self, url, mp4Name):
         #创建下载路径等准备
         self.init()
+        self.downSuccess = 0
+        self.downTotal = 0
 
         m3u8Ulrs = set()
         mp4Urls = set()
@@ -400,6 +428,7 @@ class  VedioDownLoadProcesser:
              return
             
         print(f'the url:{url}，共含m3u8文件{len(m3u8Ulrs)}, mp4的文件个数{len(mp4Urls)}')
+
         #串行一一下载
         count = 0
         for url in m3u8Ulrs:
