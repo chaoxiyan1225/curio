@@ -77,6 +77,7 @@ class AdviceUrls(ShenQiWidget):
             </head>\
             <body>\
             <h1><font color="yellow">推荐资源列表</font></h1>\
+            --------------------------------------------------------------------------------------------------\
             <ul>\
               {urlsStr}\
             </ul>\
@@ -295,14 +296,13 @@ class Download(ShenQiWidget):
 
     def freshProgress(self):
 
-        if self.progerss_value >= 100:
-            self.progressBar.setValue(100)
+        percent = self.downloadP.getPercent()
+        if  percent >= 1:
+            self.percent.setText('100/100') 
             self.timer.stop()
-        else:
-            self.progressBar.setValue(self.progerss_value)
-            self.progerss_value = self.progerss_value + 1
-            self.progressBar.setValue(self.progerss_value) 
-            self.percent.setText(f'{self.progerss_value}/100')   
+        else: 
+            self.percent.setText(f'{percent}/100')   
+            
 
     def initUI(self):
 
