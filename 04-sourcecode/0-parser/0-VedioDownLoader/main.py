@@ -10,6 +10,9 @@ from VedioDownLoadProcesser import *
 
 import Errors
 
+WIDTH = 1000
+HEIGHT = 600
+
 class ShenQiWidget(QWidget): 
 
     def __init__(self, path):
@@ -54,11 +57,14 @@ class AdviceUrls(ShenQiWidget):
     def initUI(self):
 
             self.setWindowTitle("当前位于经典推荐页面")
-            self.resize(1000,600)
+            self.resize(WIDTH,HEIGHT)
             self.text = QTextEdit()
             self.text.setStyleSheet("QTextEdit{background-color:rgba(0,0,0,0); border:0px;}")
-
-            urlsStr = ''
+            
+            h = HEIGHT - 300
+            w = WIDTH - 200
+            urlsStr =   f'<table border="1" align="center" width={w} height={h}>\
+                   <tr><th>编号</th><th>名称</th><th>简介</th><th>网址</th></tr><tr>'
             urls, code = self.sysCtrl.getAllUrlsArray()
             if code != Errors.SUCCESS:  
                 QMessageBox.question(self, "错误提示", "获取经典推荐信息错误", QMessageBox.StandardButton.Yes) 
@@ -69,7 +75,9 @@ class AdviceUrls(ShenQiWidget):
                 id1=url.id.ljust(6, '_')
                 name1=url.name.ljust(10, '_')
                 des1=url.descript.ljust(16, '_')
-                urlsStr =f'{urlsStr}<li>编号:<font color="blue">{id1}</font>| 名称:<font color="blue">{name1}</font> | 简介:<font color="blue">{des1}</font> | 网址:<font color="blue">{url.url}</font>\n'
+                urlsStr =f'{urlsStr}<tr><th>{id1}</th><th>{name1}</th><th>{des1}</th> <th>{url.url}</th></tr>\n' 
+            
+            urlsStr = f'{urlsStr}</table>'    
 
             str = f'<html>\
             <head>\
@@ -145,7 +153,7 @@ class Register(ShenQiWidget):
     def initUI(self):
 
         self.setWindowTitle("当前位于注册界面")
-        self.resize(1000,600)
+        self.resize(WIDTH,HEIGHT)
         self.progressValue = 0
 
         self.email_label = QLabel("您的邮箱*:")
@@ -192,10 +200,8 @@ class BuyNow(ShenQiWidget):
     def initUI(self):
 
         self.setWindowTitle("当前位于续费界面")
-        self.resize(1000,600)
-
+        self.resize(WIDTH,HEIGHT)
         self.text = QTextEdit()
-
         self.text.setStyleSheet("QTextEdit{background-color:rgba(0,0,0,0); border:0px;}")
 
         str = '<html>\
@@ -212,11 +218,11 @@ class BuyNow(ShenQiWidget):
         <h1><font color="yellow">付费通道</font></h1>\
           <div>\
             <font color="yellow">微信支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./ld.png" width="160" height="160"/>\
+            <img src="./weixin.png" width="240" height="320"/>\
             <br/>\
             <br>\
             <font color="yellow">支付宝支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./ld.png" width="160" height="160"/>\
+            <img src="./zhifubao.jpg" width="240" height="320"/>\
            </div>\
         </body>\
         </html>'
@@ -307,7 +313,7 @@ class Download(ShenQiWidget):
     def initUI(self):
 
         self.setWindowTitle("当前位于下载界面")
-        self.resize(1000,600)
+        self.resize(WIDTH,HEIGHT)
         self.progressValue = 0
 
         self.file_label = QLabel("请输入下载URL")
@@ -371,7 +377,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("撸片神器-V2.0.6.8")
-        self.resize(800,  600)  
+        self.resize(WIDTH,HEIGHT) 
 
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)

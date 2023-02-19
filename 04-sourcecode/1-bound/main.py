@@ -264,11 +264,11 @@ class BuyNow(BaseWidget):
         <h1><font color="yellow">付费通道</font></h1>\
           <div>\
             <font color="yellow">微信支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./ld.png" width="160" height="160"/>\
+            <img src="./weixin.png" width="240" height="320"/>\
             <br/>\
             <br>\
             <font color="yellow">支付宝支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./ld.png" width="160" height="160"/>\
+            <img src="./zhifubao.jpg" width="240" height="320"/>\
            </div>\
         </body>\
         </html>'
