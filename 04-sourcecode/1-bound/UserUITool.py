@@ -2,7 +2,7 @@
 import sys, os
 import requests, json
 import uuid
-import base64
+import base64 
 
 import SystemConf
 import re
@@ -23,11 +23,11 @@ def IsValidEmail(email:str)->bool:
        return False
 
     result = re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email)
-
+    
     if result:
        return True
     else:
-       return False
+       return False 
 
 def IsValidTel(tel:str)->bool:
 
@@ -42,3 +42,14 @@ def IsValidTel(tel:str)->bool:
        return True
 
     return False
+
+if __name__ == '__main__':
+
+   
+   '''
+   email = 'dsdssdsddsdsds'
+   print(IsValidEmail(email)) 
+   print(IsValidEmail(''))
+   print(IsValidEmail('wwewewewe@qq.com'))   
+   print(IsValidEmail('wwewewewe@163.com'))   
+   '''
