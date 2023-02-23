@@ -1,3 +1,4 @@
+#coding=utf8
 from operator import ne
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
