@@ -1,3 +1,4 @@
+from operator import ne
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
@@ -7,26 +8,28 @@ from threading import Thread
 
 from SystemContrl import *
 from UserControl import *
+import time
 
 import efinance as ef
 import Errors
-import pyttsx3 
+import ConsumerAndProducer 
 
 WIDTH = 1200
 HEIGHT = 800
+PERIOD = 5  #默认5s一个检测周期
 
 # 600519 300750
 
 # 一分钟K线：6 7 11
 
-engine = pyttsx3.init()
-def speak(msg):
-    engine.say(msg)
-    engine.runAndWait()
-
-def say(msg):
-    speak_thread = Thread(target=speak, args=[msg])
-    speak_thread.start()
+def needMonitor(map, k, period = PERIOD):
+    if not map.get(k):
+        map[k] = time.time()
+        return True
+    else:
+        if time.time() > map[k] + period:
+            return True
+    return False
 
 class BaseWidget(QWidget): 
 
@@ -38,6 +41,7 @@ class BaseWidget(QWidget):
         self.validPeriod = 3600 
         self.lastValidTime = 0
         self.LoginValid = False
+        self.monitorMap = {}
 
         background_color = QColor()
         background_color.setNamedColor('#282821')
@@ -114,7 +118,7 @@ class BaseWidget(QWidget):
 
     def CheckValid(self):
         
-        if self.LoginValid == True and (timer.time() - self.lastValidTime)  < self.validPeriod:
+        if self.LoginValid == True and (time.time() - self.lastValidTime)  < self.validPeriod:
             return True
 
         result = self.userCtrl.LoginCheck()
@@ -132,8 +136,10 @@ class BaseWidget(QWidget):
            self.preCheckResult = False
            return False
 
-        result = self.sysCtrl.clientValid()
+        print(f'the user login check {result.toString()}')
 
+        result = self.sysCtrl.clientValid()
+        print(f'the client valid check {result.toString()}')
         if result == Errors.S_Forbidden:
            QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
            self.preCheckResult = False
@@ -163,11 +169,10 @@ class BaseWidget(QWidget):
            return
 
         # 600519 300750
-        '''
         isValid = self.CheckValid()
         if isValid == False:
            return 
-        '''
+    
         self.preCheckResult = True
         type = self.cb.currentText()
         codes = list(map(int, codesInput.strip().split()))
@@ -448,7 +453,6 @@ class ShowFund(BaseWidget):
 
         self.text.setHtml(strHtml)
 
-
     def dispatchByType(self, codes, type):
         self.reverseSort = False
         if type == '基金信息':
@@ -456,7 +460,6 @@ class ShowFund(BaseWidget):
            frame1 = ef.fund.get_base_info(codes)
            frame2 = ef.fund.get_realtime_increase_rate(f'{codes[0]}')
            frame3 = ef.fund.get_types_percentage(codes[0])
-
            frames = []
            frames.append(frame1)
            frames.append(frame2)
@@ -512,7 +515,7 @@ class ShowFund(BaseWidget):
         self.layout0.addWidget(self.cb)
         self.layout0.addWidget(self.refreshButton)
         self.layout0.addWidget(self.queryButton)
-        
+
         self.layout.addLayout(self.layout0)
 
         self.text = QTextEdit()
@@ -618,14 +621,18 @@ class MonitorStock(BaseWidget):
                     if pos != -1 and tmpCnt == pos:
                        tmpValue = frame[column].get(index)
 
-                    if namePos == 2:
+                    if namePos == 1:
                        stockName = frame[column].get(index)
 
                     strB = f'{strB}<th>{frame[column].get(index)}</th>'
 
                 if threshold and threshold.strip() != '' and self.needMonitor(float(threshold), float(tmpValue), op):
                    strB = f'{strB}<th bgcolor="#FF0000">正在告警</th></tr>'
-                   #say(f'{stockName}中了请处理')
+                   if needMonitor(self.monitorMap, stockName):
+                      self.monitorMap[stockName] = time.time()
+                      #ConsumerAndProducer.speak(f'{stockName}中了请处理')
+                      
+                   #CommonTool.sendMonitorMsg(self.userCtrl.userInfo.email, f'股票{stockName}达到设定值可以买卖', f'已经达到设定的阈值{threshold}，请进行买卖')
                 else:
                    strB = f'{strB}<th>----</th></tr>'
 
@@ -654,8 +661,7 @@ class MonitorStock(BaseWidget):
             pos, op = self.getPosByType(self.cb_1.currentText())
             table = fillOneFrame(frame, pos, self.value_code_1.text(), op)
             tables = f'{tables}{table}'
-
-
+        
         isValid = False
         if self.monitor_2.isChecked():
             codeInput2 = self.stocks_code_2.text() 
@@ -818,9 +824,11 @@ def main():
     app.exec()
    
 if __name__ == "__main__":
-    print ('开始发财')
-    main()
-    speak("你好啊啊啊啊啊啊")
-    speak("吾问无为谓无")
-    speak("喂喂喂翁")
-    print('财已到手')
+    print ('starting...........')
+
+    try:
+       main()
+    except Exception as e:
+       print(e)
+
+    print('finishing.........')
