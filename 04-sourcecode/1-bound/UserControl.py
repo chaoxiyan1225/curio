@@ -137,6 +137,8 @@ class UserContrl:
          return error
 
       print(f'登陆成功，可以使用软件, {userInfo.toString()}')
+
+      self.userInfo = userInfo
       return Errors.SUCCESS
 
    def clickToRegister(self, email, tel = ''):
@@ -155,6 +157,8 @@ class UserContrl:
 
       return  Errors.SUCCESS
 
+   def  __init__(self) -> None:
+       self.userInfo = None
 '''
 ctrl = UserContrl()
 result = ctrl.LoginCheck()
