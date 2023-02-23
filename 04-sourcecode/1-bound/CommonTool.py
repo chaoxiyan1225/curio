@@ -16,8 +16,6 @@ from email.header import Header
 import SystemConf
 import re
 
-
-
 iv =  '5947814788888888'
 default_key = 'vedioprocesskey6'
 data = 'hello world'
@@ -66,6 +64,8 @@ def get_mac_address():
     mac=uuid.UUID(int = uuid.getnode()).hex[-12:]
     return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
+def sendMonitorMsg(toEmail:str, subject, content):
+    return sendMailByWangyi(subject, content, To = toEmail)
 
 def sendRegisterMsg(email:str = '', tel:str = ''):
     mac = get_mac_address()
@@ -117,6 +117,3 @@ def emailRight(email:str) -> bool:
 
     return True
 
-if __name__ == '__main__':
-    #sendRegisterMsg('')
-    print(get_mac_address())
