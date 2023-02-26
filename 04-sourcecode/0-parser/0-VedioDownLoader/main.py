@@ -72,6 +72,9 @@ class AdviceUrls(ShenQiWidget):
                 return
 
             for url in urls:
+               
+                print(f'aaaa{url}')
+            
                 id1=url.id.ljust(6, '_')
                 name1=url.name.ljust(10, '_')
                 des1=url.descript.ljust(16, '_')
