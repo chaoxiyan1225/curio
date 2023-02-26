@@ -47,7 +47,7 @@ class SoftWareContrl:
           req = urllib.request.Request(gitZipFileName,headers=headers)
           
           #print(f'print headers {headers}')
-          userRead = urllib.request.urlopen(req, timeout=6)
+          userRead = urllib.request.urlopen(req, timeout=15)
           data = userRead.read()
           #print(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
