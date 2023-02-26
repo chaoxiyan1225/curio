@@ -14,6 +14,7 @@ import time
 import efinance as ef
 import Errors
 import ConsumerAndProducer 
+import logger
 
 WIDTH = 1200
 HEIGHT = 800
@@ -70,8 +71,6 @@ class BaseWidget(QWidget):
         self.move(self.win_rect.center)         # 移动窗口与窗口矩形重合
 
     def fillStocksBase(self, frame, type, isMonitor = False):
-
-        print(frame)
         strA = ''
         for c in frame.columns.values:
             strA =f'{strA}<th>{c}</th>\n'
@@ -137,10 +136,9 @@ class BaseWidget(QWidget):
            self.preCheckResult = False
            return False
 
-        print(f'the user login check {result.toString()}')
-
+        logger.warning(f'the user login check {result.toString()}')
         result = self.sysCtrl.clientValid()
-        print(f'the client valid check {result.toString()}')
+        logger.warning(f'the client valid check {result.toString()}')
         if result == Errors.S_Forbidden:
            QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
            self.preCheckResult = False
@@ -558,7 +556,6 @@ class MonitorStock(BaseWidget):
         self.checkBoxContent(self.monitor_2, self.value_code_2, 'type2')
 
         if not self.cbValid1 and not self.cbValid2:
-            print('不用检测')
             return
 
         self.reverseSort = True
@@ -825,11 +822,11 @@ def main():
     app.exec()
    
 if __name__ == "__main__":
-    print ('starting...........')
+    logger.warning('starting...........')
 
     try:
        main()
     except Exception as e:
-       print(e)
+       logger.error(e)
 
-    print('finishing.........')
+    logger.warning('finishing.........')
