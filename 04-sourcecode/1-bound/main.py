@@ -1,30 +1,48 @@
+#coding=utf8
+from operator import ne
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-import UserUITool
+import UserUITool, CommonTool
 import sys, platform, random
+from threading import Thread
 
 from SystemContrl import *
 from UserControl import *
+import time
 
 import efinance as ef
-
 import Errors
+import ConsumerAndProducer 
 
 WIDTH = 1200
 HEIGHT = 800
+PERIOD = 5  #默认5s一个检测周期
+
+# 600519 300750
+
+# 一分钟K线：6 7 11
+
+def needMonitor(map, k, period = PERIOD):
+    if not map.get(k):
+        map[k] = time.time()
+        return True
+    else:
+        if time.time() > map[k] + period:
+            return True
+    return False
 
 class BaseWidget(QWidget): 
 
     def __init__(self, path):
         super(BaseWidget, self).__init__()          
         #self.setAutoFillBackground(True) 
-
         self.userCtrl = UserContrl()
         self.sysCtrl = SoftWareContrl()
         self.validPeriod = 3600 
         self.lastValidTime = 0
         self.LoginValid = False
+        self.monitorMap = {}
 
         background_color = QColor()
         background_color.setNamedColor('#282821')
@@ -51,11 +69,13 @@ class BaseWidget(QWidget):
         self.win_rect.moveCenter(self.screen_center)      # 移动窗口矩形到屏幕中心
         self.move(self.win_rect.center)         # 移动窗口与窗口矩形重合
 
-    def fillStocksBase(self, frame, type):
+    def fillStocksBase(self, frame, type, isMonitor = False):
+
+        print(frame)
         strA = ''
         for c in frame.columns.values:
             strA =f'{strA}<th>{c}</th>\n'
-      
+
         #是否按时间倒序排列
         if self.reverseSort:
            frame.sort_index(ascending=False,inplace=True)
@@ -68,12 +88,20 @@ class BaseWidget(QWidget):
             if count >= self.showCnt:
                 break
 
+            count = 0
             for column in frame.columns:
-                strB = f'{strB}<th>{frame[column].get(index)}</th>'
-            strB = f'{strB}</tr>'
+                count = count + 1
+                bc = ''
+                v = frame[column].get(index)
+                isDigital = isinstance(v, int) or isinstance(v, float)
+                if count in self.colorPos and isDigital and v < 0:
+                   bc = 'bgcolor="#00FF00"'
+                elif count in self.colorPos and isDigital and v > 0:
+                   bc = 'bgcolor="#FF0000"'
 
-        print(f'当前显示条数：{count}, showCnt={self.showCnt}, 查询类型{type}')
-         
+                strB = f'{strB}<th {bc}>{frame[column].get(index)}</th>'
+            strB = f'{strB}</tr>'
+        
         width = WIDTH - 100
         strHtml = f'<html>\
         <head>\
@@ -91,7 +119,7 @@ class BaseWidget(QWidget):
 
     def CheckValid(self):
         
-        if self.LoginValid == True and (timer.time() - self.lastValidTime)  < self.validPeriod:
+        if self.LoginValid == True and (time.time() - self.lastValidTime)  < self.validPeriod:
             return True
 
         result = self.userCtrl.LoginCheck()
@@ -109,8 +137,10 @@ class BaseWidget(QWidget):
            self.preCheckResult = False
            return False
 
-        result = self.sysCtrl.clientValid()
+        print(f'the user login check {result.toString()}')
 
+        result = self.sysCtrl.clientValid()
+        print(f'the client valid check {result.toString()}')
         if result == Errors.S_Forbidden:
            QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
            self.preCheckResult = False
@@ -140,11 +170,10 @@ class BaseWidget(QWidget):
            return
 
         # 600519 300750
-        '''
         isValid = self.CheckValid()
         if isValid == False:
            return 
-        '''
+    
         self.preCheckResult = True
         type = self.cb.currentText()
         codes = list(map(int, codesInput.strip().split()))
@@ -255,7 +284,7 @@ class BuyNow(BaseWidget):
         <title>当前位于续费页面</title>\
         </head>\
         <body>\
-        <h1><font color="yellow">撸片神器使用须知</font></h1>\
+        <h1><font color="yellow">牛牛飞天软件使用须知</font></h1>\
         <ul>\
           <li>初次注册后可以免费使用1周,不限下载次数</li>\
           <li>软件仅支持一台电脑登陆使用</li>\
@@ -264,11 +293,11 @@ class BuyNow(BaseWidget):
         <h1><font color="yellow">付费通道</font></h1>\
           <div>\
             <font color="yellow">微信支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./weixin.png" width="240" height="320"/>\
+            <img src="./ld.png" width="160" height="160"/>\
             <br/>\
             <br>\
             <font color="yellow">支付宝支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./zhifubao.jpg" width="240" height="320"/>\
+            <img src="./ld.png" width="160" height="160"/>\
            </div>\
         </body>\
         </html>'
@@ -286,20 +315,27 @@ class ShowStock(BaseWidget):
 
     def dispatchByType(self, codes, type):
         self.reverseSort = False
+        self.colorPos.clear()
         if type == '股票信息':
            self.reverseSort = False
            frame = ef.stock.get_base_info(codes)
            self.fillStocksBase(frame , type)
         elif type == '1分钟K线':
            self.reverseSort = True
+           self.colorPos.append(11)
+           self.colorPos.append(12)
            frame = ef.stock.get_quote_history(codes, klt=1)[codes[0]]
            self.fillStocksBase(frame, type)        
         elif type == '5分钟K线':
            self.reverseSort = True
+           self.colorPos.append(11)
+           self.colorPos.append(12)
            frame = ef.stock.get_quote_history(codes, klt=5)[codes[0]]
            self.fillStocksBase(frame, type)       
         elif type == '历史K线':
            self.reverseSort = True
+           self.colorPos.append(11)
+           self.colorPos.append(12)
            frame = ef.stock.get_quote_history(codes)[codes[0]]
            self.fillStocksBase(frame, type)        
         elif type == '历史单子流入':
@@ -316,6 +352,7 @@ class ShowStock(BaseWidget):
            self.fillStocksBase(frame, type)
         elif type == '股票龙虎榜':
            self.reverseSort = False
+           self.colorPos.append(6)
            frame = ef.stock.get_daily_billboard()
            self.fillStocksBase(frame, type)
 
@@ -325,6 +362,7 @@ class ShowStock(BaseWidget):
         self.resize(WIDTH,HEIGHT)
         self.progressValue = 0
         self.showCnt = 200
+        self.colorPos = []
 
         self.stocks_label = QLabel("股票代码")
         self.stocks_code = QLineEdit("")
@@ -416,7 +454,6 @@ class ShowFund(BaseWidget):
 
         self.text.setHtml(strHtml)
 
-
     def dispatchByType(self, codes, type):
         self.reverseSort = False
         if type == '基金信息':
@@ -424,14 +461,13 @@ class ShowFund(BaseWidget):
            frame1 = ef.fund.get_base_info(codes)
            frame2 = ef.fund.get_realtime_increase_rate(f'{codes[0]}')
            frame3 = ef.fund.get_types_percentage(codes[0])
-
            frames = []
            frames.append(frame1)
            frames.append(frame2)
            frames.append(frame3)
            self.filleFundBaseInfo(frames, type)     
         elif type == '历史净值信息':
-           self.reverseSort = True
+           self.reverseSort = False
            frame = ef.fund.get_quote_history(codes[0])
            self.fillStocksBase(frame, type)       
         elif type == '全部公墓基金名单':
@@ -480,7 +516,6 @@ class ShowFund(BaseWidget):
         self.layout0.addWidget(self.cb)
         self.layout0.addWidget(self.refreshButton)
         self.layout0.addWidget(self.queryButton)
-        #self.layout0.addWidget(self.stopButton)
 
         self.layout.addLayout(self.layout0)
 
@@ -493,8 +528,272 @@ class ShowFund(BaseWidget):
 
         self.setLayout(self.layout)
         self.timer = QTimer()
-        self.timer.start(5000) 
+        self.timer.start(5000)
         self.timer.timeout.connect(self.refreshData)
+
+class MonitorStock(BaseWidget):
+
+    def checkBoxContent(self, cb, ql, type, needAlert = False):
+
+        isValid = False
+        if cb.isChecked():
+           value = ql.text().replace('.', '')
+           isValid = value.lstrip('-').isdigit()
+           if isValid == False and needAlert:
+              QMessageBox.question(self, "错误提示", "必须是数字", QMessageBox.StandardButton.Yes)
+
+        cbValid = isValid
+
+        if type == 'type1':
+            self.cbValid1 = cbValid
+        elif type == 'type2':
+            self.cbValid2 = cbValid
+
+    def monitor(self):
+
+        if not self.monitor_1.isChecked() and not self.monitor_2.isChecked():
+           return
+        
+        self.checkBoxContent(self.monitor_1, self.value_code_1, 'type1')
+        self.checkBoxContent(self.monitor_2, self.value_code_2, 'type2')
+
+        if not self.cbValid1 and not self.cbValid2:
+            print('不用检测')
+            return
+
+        self.reverseSort = True
+        self.fillInfoAndMonitor()
+
+    def getPosByType(self, type):
+        pos = -1
+        op = '>='
+        if type == '选择监控类型':
+            pos = -1
+        elif type == '价格最高值':
+            pos = 6
+        elif type == '价格最低值':
+            pos = 7
+            op = '<='
+        elif type == '涨幅最大%比':
+            pos = 11
+            op = '>='
+        elif type == '跌幅最大%比':
+            pos == 11 
+            op = '<='
+        
+        return pos, op
+
+    def needMonitor(self, threshold, value, op):
+        if op == '>=':
+            return value >= threshold
+        elif op == '<=':
+            return value <= threshold
+
+   
+    def fillInfoAndMonitor(self):
+
+        def fillOneFrame(frame, pos, threshold, op):
+            strA = ''
+            for c in frame.columns.values:
+                strA =f'{strA}<th>{c}</th>'
+
+            strA = f'{strA}<th>盯盘告警</th>\n'
+          
+            #是否按时间倒序排列
+            if self.reverseSort:
+               frame.sort_index(ascending=False,inplace=True)
+
+            strB = ''
+            count = 0
+
+            for index, row in frame.iterrows():
+                
+                count = count + 1
+                if count > self.showCnt:
+                    break
+                strB = f'{strB}<tr>'
+                tmpCnt = 0
+                tmpValue = 0
+                namePos = 0 
+                stockName = ''
+                for column in frame.columns:
+                    tmpCnt = tmpCnt + 1
+                    namePos = namePos + 1
+                    if pos != -1 and tmpCnt == pos:
+                       tmpValue = frame[column].get(index)
+
+                    if namePos == 1:
+                       stockName = frame[column].get(index)
+
+                    strB = f'{strB}<th>{frame[column].get(index)}</th>'
+
+                if threshold and threshold.strip() != '' and self.needMonitor(float(threshold), float(tmpValue), op):
+                   strB = f'{strB}<th bgcolor="#FF0000">正在告警</th></tr>'
+                   if needMonitor(self.monitorMap, stockName):
+                      self.monitorMap[stockName] = time.time()
+                      #ConsumerAndProducer.speak(f'{stockName}中了请处理')
+                      
+                   #CommonTool.sendMonitorMsg(self.userCtrl.userInfo.email, f'股票{stockName}达到设定值可以买卖', f'已经达到设定的阈值{threshold}，请进行买卖')
+                else:
+                   strB = f'{strB}<th>----</th></tr>'
+
+            width = WIDTH - 100
+            height = HEIGHT - 700
+            table = f'<table border="1" cellpadding = "10" width={width} height={height}>\
+                        <tr>{strA}</tr>\
+                            {strB}\
+                      </table>'
+
+            return table
+
+        tables = '';
+        isValid = False
+        if self.monitor_1.isChecked():
+            codeInput1 = self.stocks_code_1.text() 
+            if codeInput1  and codeInput1.strip() != '':
+               isValid = True
+
+            if isValid == False:
+               QMessageBox.question(self, "错误提示", "股票代码错误", QMessageBox.StandardButton.Yes) 
+               self.preCheckResult = False
+               return
+             
+            frame = ef.stock.get_quote_history(codeInput1, klt=1)
+            pos, op = self.getPosByType(self.cb_1.currentText())
+            table = fillOneFrame(frame, pos, self.value_code_1.text(), op)
+            tables = f'{tables}{table}'
+        
+        isValid = False
+        if self.monitor_2.isChecked():
+            codeInput2 = self.stocks_code_2.text() 
+            if codeInput2  and codeInput2.strip() != '':
+               isValid = True
+
+            if isValid == False:
+               QMessageBox.question(self, "错误提示", "股票代码错误", QMessageBox.StandardButton.Yes) 
+               self.preCheckResult = False
+               return
+            frame = ef.stock.get_quote_history(codeInput2, klt=1)
+            pos, op = self.getPosByType(self.cb_2.currentText())
+            table = fillOneFrame(frame, pos, self.value_code_2.text(), op)
+            tables = f'{tables}{table}'
+
+        strHtml = f'<html>\
+                        <head>\
+                        <title>{type}</title>\
+                        </head>\
+                        <body>\
+                           {tables}\
+                        </body>\
+                    </html>'
+
+        self.text.setHtml(strHtml)
+
+
+    def dispatchByType(self, codes, type):
+        self.reverseSort = False
+        if type == '基金信息':
+           self.reverseSort = False
+           frame1 = ef.fund.get_base_info(codes)
+           frame2 = ef.fund.get_realtime_increase_rate(f'{codes[0]}')
+           frame3 = ef.fund.get_types_percentage(codes[0])
+
+           frames = []
+           frames.append(frame1)
+           frames.append(frame2)
+           frames.append(frame3)
+           self.filleFundBaseInfo(frames, type)     
+        elif type == '历史净值信息':
+           self.reverseSort = False
+           frame = ef.fund.get_quote_history(codes[0])
+           self.fillStocksBase(frame, type)       
+        elif type == '全部公墓基金名单':
+           self.reverseSort = False
+           frame = ef.fund.get_fund_codes()
+           self.fillStocksBase(frame, type)        
+        elif type == '股票占比数据':
+           self.reverseSort = False
+           frame = ef.fund.get_invest_position(codes[0])
+           self.fillStocksBase(frame, type)
+        elif type == '阶段涨跌幅度':
+           self.reverseSort = True
+           frame = ef.fund.get_period_change(codes[0])
+           self.fillStocksBase(frame, type)
+
+    def initUI(self):
+
+        self.setWindowTitle("当前位于盯盘界面")
+        self.resize(WIDTH,HEIGHT)
+        self.progressValue = 0
+        self.showCnt = 1
+
+        self.stocks_label_1 = QLabel("股票代码")
+        self.stocks_code_1 = QLineEdit("")
+        self.stocks_code_1.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
+        self.cb_1=QComboBox()
+        self.cb_1.addItem('选择监控类型')
+        self.cb_1.addItem('价格最高值')
+        self.cb_1.addItem('价格最低值')
+        self.cb_1.addItem('涨幅最大%比')
+        self.cb_1.addItem('跌幅最大%比')
+
+        self.value_label_1 = QLabel("输入数值")
+        self.value_code_1 = QLineEdit("")
+        self.value_code_1.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
+
+        self.monitor_1 = QCheckBox('开始盯盘')
+        self.monitor_1.setChecked(False)
+        self.cbValid1 = False
+        self.monitor_1.stateChanged.connect(lambda:self.checkBoxContent(self.monitor_1, self.value_code_1, 'type1', needAlert = True))
+
+        self.stocks_label_2 = QLabel("股票代码")
+        self.stocks_code_2 = QLineEdit("")
+        self.stocks_code_2.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
+        self.cb_2 = QComboBox()
+        self.cb_2.addItem('选择监控类型')
+        self.cb_2.addItem('价格最高值')
+        self.cb_2.addItem('价格最低值')
+        self.cb_2.addItem('涨幅最大%比')
+        self.cb_2.addItem('跌幅最大%比')
+
+
+        self.value_label_2 = QLabel("输入数值")
+        self.value_code_2 = QLineEdit("")
+        self.value_code_2.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
+
+        self.monitor_2 = QCheckBox('开始盯盘')
+        self.monitor_2.setChecked(False)
+        self.cbValid2 = False
+        self.monitor_2.stateChanged.connect(lambda:self.checkBoxContent(self.monitor_2, self.value_code_2, 'type2', needAlert=True))
+
+        self.layout0 =  QHBoxLayout()
+        self.layout0.addWidget(self.stocks_label_1)
+        self.layout0.addWidget(self.stocks_code_1)
+        self.layout0.addWidget(self.cb_1)
+        self.layout0.addWidget(self.value_label_1)
+        self.layout0.addWidget(self.value_code_1)
+        self.layout0.addWidget(self.monitor_1)
+
+        self.layout1 =  QHBoxLayout()
+        self.layout1.addWidget(self.stocks_label_2)
+        self.layout1.addWidget(self.stocks_code_2)
+        self.layout1.addWidget(self.cb_2)
+        self.layout1.addWidget(self.value_label_2)
+        self.layout1.addWidget(self.value_code_2)
+        self.layout1.addWidget(self.monitor_2)
+
+        self.text = QTextEdit()
+        self.text.setStyleSheet("QTextEdit{background-color:rgba(0,0,0,0); border:0px;}")
+
+        self.layoutV = QVBoxLayout()
+        self.layoutV.addLayout(self.layout0)
+        self.layoutV.addLayout(self.layout1)
+        self.layoutV.addWidget(self.text)
+
+        self.setLayout(self.layoutV)
+        self.timer = QTimer()
+        self.timer.start(5000) 
+        self.timer.timeout.connect(self.monitor)
 
 
 class MainWindow(QMainWindow):
@@ -503,6 +802,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("牛牛飞天-V2.0.6.8")
+        self.setWindowIcon(QIcon("./favicon.ico"))
         self.resize(WIDTH,HEIGHT) 
 
         tabs = QTabWidget()
@@ -511,6 +811,7 @@ class MainWindow(QMainWindow):
 
         tabs.addTab(ShowStock("./stock.png"), "股票操作")
         tabs.addTab(ShowFund("./fund.png"), "基金操作")
+        tabs.addTab(MonitorStock("./buy.png"), "盯盘告警")
         tabs.addTab(BuyNow("./buy.png"), "续费入口")
         tabs.addTab(Register("./rg.png"), "一键注册")
 
@@ -524,6 +825,11 @@ def main():
     app.exec()
    
 if __name__ == "__main__":
-    print ('开始发财')
-    main()
-    print('财已到手')
+    print ('starting...........')
+
+    try:
+       main()
+    except Exception as e:
+       print(e)
+
+    print('finishing.........')

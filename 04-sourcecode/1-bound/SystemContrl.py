@@ -3,7 +3,7 @@ import sys, os
 import requests, json
 import urllib.request
 import ssl
-import base64
+import base64 
 from Crypto.Cipher import AES
 from io import BytesIO
 from zipfile import ZipFile
@@ -27,9 +27,10 @@ class SofeWareInfo:
       self.toatalSize = toatalSize
       self.author = author
       self.clientEnable = clientEnable
+      self.versionsForbidden = []
 
    def toString(self):
-      s = json.dumps(self.__dict__)
+      s = json.dumps(self.__dict__) 
       return s
 
 class SoftWareContrl:
@@ -43,23 +44,23 @@ class SoftWareContrl:
           ssl._create_default_https_context = ssl._create_unverified_context
           headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
           req = urllib.request.Request(gitZipFileName,headers=headers)
-
+          
           #print(f'print headers {headers}')
           userRead = urllib.request.urlopen(req, timeout=6)
           data = userRead.read()
           #print(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
-          files = zipFile.namelist()
+          files = zipFile.namelist()         
           if not len(files):
              print(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              status = ""
              return None, Errors.S_InvalidFileContent
           confFile = None
-
+          
           for file in files:
               if confFileName in file:
                  confFile = file
-                 break
+                 break     
           #print(f'the fils : {files}')
 
           with zipFile.open(confFile, 'r') as tmpFile:
@@ -70,7 +71,7 @@ class SoftWareContrl:
 
              confJson = json.loads(jsonData.decode().strip('\t\n'))
              if not confJson:
-                print(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+                print(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
                 return None, Errors.S_InvalidFileContent
 
              if jsonObject:
@@ -78,7 +79,7 @@ class SoftWareContrl:
                 return jsonObject, Errors.SUCCESS
              else:
                 return confJson, Errors.SUCCESS
-
+             
           return None, Errors.S_ParseFail
        except Exception as e:
              print(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
@@ -90,14 +91,16 @@ class SoftWareContrl:
    def clientValid(self):
       softWareConf, error = self.loadSoftWareInfoFromGit()
       if not softWareConf or error != Errors.SUCCESS:
-         return False, error
+         print('load conf from github fail')
+         return error
 
       if softWareConf.clientEnable.lower() == 'false':
-         return False, Errors.S_Forbidden
+         print('all client cannot run, see software.conf for more info')
+         return Errors.S_Forbidden
 
-      if SystemConf.clientVersion <= softWareConf.currentVersion:
-         print(f'the client verion is too low, client:{SystemConf.clientVersion}. and server version: {softWareConf.currentVersion}')
-         return  False, Errors.C_VersionTooLow
-
-
-      return True, Errors.SUCCESS
+      if SystemConf.clientVersion in softWareConf.versionsForbidden:
+         print(f'the client verion not alow, client:{SystemConf.clientVersion}. and server version see software.conf')
+         return Errors.C_VersionTooLow
+      
+      print('the client valid success')
+      return Errors.SUCCESS
