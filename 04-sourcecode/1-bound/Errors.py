@@ -33,9 +33,10 @@ FAIL    = BaseError("111111", "FAIL")
 '''
 C_LoginFail         = BaseError("0c_0001", "客户端登陆失败！")
 C_ErrorPasswdOrName = BaseError("0c_0002", "用户名或者密码错误")
-C_Arrearage         = BaseError("0c_0004", "无效的用户ID")
+C_Arrearage         = BaseError("0c_0004", "用户已欠费")
 C_VersionTooLow     = BaseError("0c_0006", "email 信息错误")
 C_SendEmailFail     = BaseError("0c_0007", "发送邮件错误")
+C_InvalidUser       = BaseError("0c_0008", "无效的用户请注册")
 
 #----------------------------------------------------------
 '''
@@ -47,3 +48,5 @@ S_InvalidFileContent = BaseError("0s_0002", "下载的文件内容为空")
 S_ParseFail          = BaseError("0s_0003", "服务端文件解析异常")
 S_Forbidden          = BaseError("0s_0004", "该软件当前禁用!!")
 S_NoAdviceUrl        = BaseError("0s_0005", "无建议的网址")
+
+
