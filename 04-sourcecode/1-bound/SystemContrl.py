@@ -94,6 +94,10 @@ class SoftWareContrl:
       if not softWareConf or error != Errors.SUCCESS:
          logger.error('load conf from github fail')
          return error
+      
+      if softWareConf.isFree.lower() == 'true':
+         logger.warning('the software isFree to use')
+         return  Errors.S_ClientFreeUse
 
       if softWareConf.clientEnable.lower() == 'false':
          logger.error('all client cannot run, see software.conf for more info')

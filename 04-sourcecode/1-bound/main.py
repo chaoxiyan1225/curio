@@ -117,6 +117,23 @@ class BaseWidget(QWidget):
         self.text.setHtml(strHtml)
 
     def CheckValid(self):
+    
+        result = self.sysCtrl.clientValid()
+        logger.warning(f'the client valid check {result.toString()}')
+        if result == Errors.S_Forbidden:
+           QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
+           self.preCheckResult = False
+           return False
+           
+        elif result == Errors.S_ClientFreeUse:
+           self.preCheckResult = True
+           return True
+
+        elif result  != Errors.SUCCESS: 
+           QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
+           self.preCheckResult = False 
+           return False
+
         
         if self.LoginValid == True and (time.time() - self.lastValidTime)  < self.validPeriod:
             return True
@@ -136,19 +153,7 @@ class BaseWidget(QWidget):
            self.preCheckResult = False
            return False
 
-        logger.warning(f'the user login check {result.toString()}')
-        result = self.sysCtrl.clientValid()
-        logger.warning(f'the client valid check {result.toString()}')
-        if result == Errors.S_Forbidden:
-           QMessageBox.question(self, "错误提示", "该版本的客户端已经禁止使用", QMessageBox.StandardButton.Yes)
-           self.preCheckResult = False
-           return False
-
-        elif result  != Errors.SUCCESS: 
-           QMessageBox.question(self, "错误提示", "发生了未知错误请稍后重试", QMessageBox.StandardButton.Yes)
-           self.preCheckResult = False 
-           return False
-
+        logger.warning(f'the user login success')
         self.LoginValid = True
         self.lastValidTime = time.time()
         return True

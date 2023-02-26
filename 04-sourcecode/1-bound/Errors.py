@@ -49,4 +49,6 @@ S_ParseFail          = BaseError("0s_0003", "服务端文件解析异常")
 S_Forbidden          = BaseError("0s_0004", "该软件当前禁用!!")
 S_NoAdviceUrl        = BaseError("0s_0005", "无建议的网址")
 
+S_ClientFreeUse      = BaseError("1s_0001", "客户端免费试用")
+
 
