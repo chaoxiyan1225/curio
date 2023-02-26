@@ -10,7 +10,7 @@ from zipfile import ZipFile
 import CommonTool
 import time
 import SystemConf
-import Errors
+import Errors, logger
 
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
@@ -64,13 +64,13 @@ class UserContrl:
           req = urllib.request.Request(SystemConf.projectZip, headers=headers)
           
           #print(f'print headers {headers}')
-          userRead = urllib.request.urlopen(req, timeout=6)
+          userRead = urllib.request.urlopen(req, timeout=10)
           data = userRead.read()
           #print(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
           if not len(files):
-             print(f'down load conf error!')
+             logger.error(f'down load conf error!')
 
              status = ""
              return None, Errors.S_DownLoadError
@@ -84,17 +84,17 @@ class UserContrl:
           with zipFile.open(userConfFile, 'r') as userFile:
              jsonData = userFile.read()
              if not jsonData:
-                print(f'the conf has no data.exit!')
+                logger.error(f'the conf has no data.exit!')
                 return None, Errors.S_InvalidFileContent
              
              parseData = json.loads(jsonData.decode().strip('\t\n'))
              if userId not in parseData:
-                print(f'the userId{userId} 不存在')
+                logger.error(f'the userId{userId} 不存在')
                 return None, Errors.C_InvalidUser.append(f'userId{userId} 不存在')    
 
              userInfoJson = parseData[userId]
              if not userInfoJson:
-                print(f'the user not register, contack XXX ') 
+                logger.error(f'the user not register, contack XXX ') 
                 return None, Errors.C_InvalidUser    
              
              userInfo = ParseJsonToObj(userInfoJson, UserInfo)
@@ -103,7 +103,7 @@ class UserContrl:
           return None, Errors.S_UnknowError
 
        except Exception as e:
-          print("parse userInfo fail ",  str(e))
+          logger.error(f'parse userInfo fail {str(e)}')
           return None, Errors.S_ParseFail.append(f'userId:[{userId}]')
 
    def LoginCheck(self, passwd = ''):
@@ -114,7 +114,7 @@ class UserContrl:
        
       if error == Errors.C_InvalidUser:
           #CommonTool.sendRegisterMsg()
-          print(f'客户端:[{macId}]未注册,请先注册再使用')
+          logger.error(f'客户端:[{macId}]未注册,请先注册再使用')
           return error
 
       while error == Errors.S_DownLoadError and retryCnt > 0:
@@ -125,7 +125,7 @@ class UserContrl:
               break
 
       if error != Errors.SUCCESS or not userInfo:
-         print(f'请联系技术支持:{SystemConf.contackUs}, 并附加UserId:[{macId}]')
+         logger.error(f'请联系技术支持:{SystemConf.contackUs}, 并附加UserId:[{macId}]')
          CommonTool.sendClientLoginFailMsg(error.toString())
          return error
 
@@ -133,10 +133,10 @@ class UserContrl:
        #欠费了
       if error == Errors.C_Arrearage:
          #需要给界面返回欠费信息
-         print(f'当前欠费，请续费，续费操作请参考:')
+         logger.error(f'当前欠费，请续费，续费操作请参考:')
          return error
 
-      print(f'登陆成功，可以使用软件, {userInfo.toString()}')
+      logger.warning(f'登陆成功，可以使用软件, {userInfo.toString()}')
 
       self.userInfo = userInfo
       return Errors.SUCCESS
@@ -144,12 +144,12 @@ class UserContrl:
    def clickToRegister(self, email, tel = ''):
 
       if not email or CommonTool.emailRight(email) == False:
-         print(f'输入的邮箱不正确或者格式错误：{email}')
+         logger.error(f'输入的邮箱不正确或者格式错误：{email}')
          return Errors.C_EmailWrong
       
       success = CommonTool.sendRegisterMsg(email, tel) 
       if not success:
-         print(f'第二次发送')
+         logger.warning(f'第二次发送')
          sucess = CommonTool.sendRegisterMsg(email, tel)
       
       if not success:

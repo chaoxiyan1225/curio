@@ -13,7 +13,6 @@ import time
 
 import efinance as ef
 import Errors
-import ConsumerAndProducer 
 import logger
 
 WIDTH = 1200
@@ -243,7 +242,7 @@ class Register(BaseWidget):
         self.register_button = QPushButton("点我注册")
         self.register_button.resize(80, 40)
         
-        splash_pix = QPixmap('./dq.png')
+        splash_pix = QPixmap('./img/dq.png')
 
         splash = QSplashScreen(splash_pix, Qt.WindowType.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
@@ -291,11 +290,11 @@ class BuyNow(BaseWidget):
         <h1><font color="yellow">付费通道</font></h1>\
           <div>\
             <font color="yellow">微信支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./ld.png" width="160" height="160"/>\
+            <img src="./img/weixin.png" width="240" height="320"/>\
             <br/>\
             <br>\
             <font color="yellow">支付宝支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./ld.png" width="160" height="160"/>\
+            <img src="./img/zhifubao.jpg" width="240" height="320"/>\
            </div>\
         </body>\
         </html>'
@@ -799,18 +798,18 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("牛牛飞天-V2.0.6.8")
-        self.setWindowIcon(QIcon("./favicon.ico"))
+        self.setWindowIcon(QIcon("./img/favicon.ico"))
         self.resize(WIDTH,HEIGHT) 
 
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
         tabs.setMovable(False)
 
-        tabs.addTab(ShowStock("./stock.png"), "股票操作")
-        tabs.addTab(ShowFund("./fund.png"), "基金操作")
-        tabs.addTab(MonitorStock("./buy.png"), "盯盘告警")
-        tabs.addTab(BuyNow("./buy.png"), "续费入口")
-        tabs.addTab(Register("./rg.png"), "一键注册")
+        tabs.addTab(ShowStock("./img/stock.png"), "股票操作")
+        tabs.addTab(ShowFund("./img/fund.png"), "基金操作")
+        tabs.addTab(MonitorStock("./img/buy.png"), "盯盘告警")
+        tabs.addTab(BuyNow("./img/buy.png"), "续费入口")
+        tabs.addTab(Register("./img/rg.png"), "一键注册")
 
         self.setCentralWidget(tabs)
         

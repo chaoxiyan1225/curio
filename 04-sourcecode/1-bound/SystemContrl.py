@@ -11,6 +11,7 @@ from zipfile import ZipFile
 import time
 import SystemConf
 import Errors
+import logger
 
 
 def ParseJsonToObj(parseData, yourCls):
@@ -52,7 +53,7 @@ class SoftWareContrl:
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
           if not len(files):
-             print(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.error(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              status = ""
              return None, Errors.S_InvalidFileContent
           confFile = None
@@ -66,12 +67,12 @@ class SoftWareContrl:
           with zipFile.open(confFile, 'r') as tmpFile:
              jsonData = tmpFile.read()
              if not jsonData:
-                print(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+                logger.error(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
                 return None, Errors.S_InvalidFileContent
 
              confJson = json.loads(jsonData.decode().strip('\t\n'))
              if not confJson:
-                print(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
+                logger.error(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
                 return None, Errors.S_InvalidFileContent
 
              if jsonObject:
@@ -82,7 +83,7 @@ class SoftWareContrl:
              
           return None, Errors.S_ParseFail
        except Exception as e:
-             print(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.error(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              return None, Errors.S_ParseFail
 
    '''
@@ -91,16 +92,16 @@ class SoftWareContrl:
    def clientValid(self):
       softWareConf, error = self.loadSoftWareInfoFromGit()
       if not softWareConf or error != Errors.SUCCESS:
-         print('load conf from github fail')
+         logger.error('load conf from github fail')
          return error
 
       if softWareConf.clientEnable.lower() == 'false':
-         print('all client cannot run, see software.conf for more info')
+         logger.error('all client cannot run, see software.conf for more info')
          return Errors.S_Forbidden
 
       if SystemConf.clientVersion in softWareConf.versionsForbidden:
-         print(f'the client verion not alow, client:{SystemConf.clientVersion}. and server version see software.conf')
+         logger.error(f'the client verion not alow, client:{SystemConf.clientVersion}. and server version see software.conf')
          return Errors.C_VersionTooLow
       
-      print('the client valid success')
+      logger.warning('the client valid success')
       return Errors.SUCCESS

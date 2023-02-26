@@ -13,7 +13,7 @@ import smtplib
 from email.mime.text import MIMEText
 # 构建邮件头
 from email.header import Header
-import SystemConf
+import SystemConf, logger
 import re
 
 iv =  '5947814788888888'
@@ -94,10 +94,10 @@ def sendMailByWangyi(subject:str, content:str, From = SystemConf.emailFrom, To =
         smtp = smtplib.SMTP_SSL("smtp.163.com", 994)  
         smtp.login(SystemConf.emailFrom, AES_Decode(SystemConf.emailPwd))
         smtp.sendmail(SystemConf.emailFrom, [To], message.as_string())
-        print(f'发送邮件成功: {To}！！')
+        logger.warning(f'发送邮件成功: {To}！！')
         ret = True
     except smtplib.SMTPException as e:
-        print(f"无法发送邮件{To}: str{e}")
+        logger.error(f"无法发送邮件{To}: str{e}")
     finally:
         smtp.quit()
         return ret
