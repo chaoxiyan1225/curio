@@ -13,12 +13,35 @@ import smtplib
 from email.mime.text import MIMEText
 # 构建邮件头
 from email.header import Header
-import SystemConf, logger
+import SystemConf
 import re
 
 iv =  '5947814788888888'
 default_key = 'vedioprocesskey6'
 data = 'hello world'
+
+pictures = ['ab.png','dl.png','buy.png','dq.png','fund.png','icon.png','rg.png','stock.png', 'weixin.png', 'zhifubao.png']
+
+
+def picToPythonFile(picture_names, py_name):
+    """
+    将图像文件转换为py文件
+    :param picture_name:
+    :return:
+    """
+    write_data = []
+    for picture_name in picture_names:
+        filename = picture_name.replace('.', '_')
+        open_pic = open("%s" % picture_name, 'rb')
+        b64str = base64.b64encode(open_pic.read())
+        open_pic.close()
+        # 注意这边b64str一定要加上.decode()
+        write_data.append('%s = "%s"\n' % (filename, b64str.decode()))
+
+    f = open('%s.py' % py_name, 'w+')
+    for data in write_data:
+        f.write(data)
+    f.close()
 
 # aes 加密 要求key要16byte
 def AES_Encode(data, key = default_key):
@@ -94,10 +117,10 @@ def sendMailByWangyi(subject:str, content:str, From = SystemConf.emailFrom, To =
         smtp = smtplib.SMTP_SSL("smtp.163.com", 994)  
         smtp.login(SystemConf.emailFrom, AES_Decode(SystemConf.emailPwd))
         smtp.sendmail(SystemConf.emailFrom, [To], message.as_string())
-        logger.warning(f'发送邮件成功: {To}！！')
+        print(f'发送邮件成功: {To}！！')
         ret = True
     except smtplib.SMTPException as e:
-        logger.error(f"无法发送邮件{To}: str{e}")
+        print(f"无法发送邮件{To}: str{e}")
     finally:
         smtp.quit()
         return ret
@@ -117,3 +140,6 @@ def emailRight(email:str) -> bool:
 
     return True
 
+
+#picToPythonFile(pictures, 'pictures')
+#print('转换成功')
