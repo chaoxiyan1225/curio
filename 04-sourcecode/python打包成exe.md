@@ -78,10 +78,12 @@ logo_png = "iVBORw0KGgoAAAANSUhEUgAAAX0AAAClCAYAAACwYy2nAAAAAXNSR...太长省略
 
 4.2 使用的时候通过引用该python文件
 
-# 取base64图片
-logo = base64.b64decode(logo_png)
-logo_2 = base64.b64decode(logo_2_png)
-# pyqt页面  base64转化QPixmap
-icon = QPixmap()
-icon.loadFromData(logo_2)
+取base64图片
+logo = base64.b64decode(logo_png)<br>
+logo_2 = base64.b64decode(logo_2_png)<br>
+
+pyqt页面  base64转化QPixmap<br>
+
+icon = QPixmap() <br>
+icon.loadFromData(logo_2)<br>
 self.label_logo.setPixmap(icon)
