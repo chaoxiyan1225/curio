@@ -1,4 +1,5 @@
 #coding=utf8
+import base64
 from operator import ne
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
@@ -12,13 +13,12 @@ from UserControl import *
 import time
 
 import efinance as ef
-import Errors
-import logger
+import Errors, logger
+from pictures import *
 
 WIDTH = 1200
 HEIGHT = 800
 PERIOD = 5  #默认5s一个检测周期
-
 
 # 600519 300750
 
@@ -117,7 +117,7 @@ class BaseWidget(QWidget):
         self.text.setHtml(strHtml)
 
     def CheckValid(self):
-    
+        
         result = self.sysCtrl.clientValid()
         logger.warning(f'the client valid check {result.toString()}')
         if result == Errors.S_Forbidden:
@@ -244,17 +244,18 @@ class Register(BaseWidget):
         self.tel.resize(80, 40)
         self.tel.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
 
-
         self.register_button = QPushButton("点我注册")
         self.register_button.resize(80, 40)
-        
-        splash_pix = QPixmap('./img/dq.png')
 
-        splash = QSplashScreen(splash_pix, Qt.WindowType.WindowStaysOnTopHint)
+        dq  = base64.b64decode(dq_png)
+        # pyqt页面  base64转化QPixmap
+        icon = QPixmap()
+        icon.loadFromData(dq)
+        
+        splash = QSplashScreen(icon, Qt.WindowType.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
         splash.setEnabled(False)
      
-
         layout1 = QHBoxLayout()
         layout1.addWidget(self.email_label)
         layout1.addWidget(self.email)
@@ -279,38 +280,71 @@ class BuyNow(BaseWidget):
 
         self.setWindowTitle("当前位于续费界面")
         self.resize(WIDTH,HEIGHT)
-        self.text = QTextEdit()
-        self.text.setStyleSheet("QTextEdit{background-color:rgba(0,0,0,0); border:0px;}")
 
-        str = '<html>\
-        <head>\
-        <title>当前位于续费页面</title>\
-        </head>\
-        <body>\
-        <h1><font color="yellow">牛牛飞天软件使用须知</font></h1>\
-        <ul>\
-          <li>初次注册后可以免费使用1周,不限下载次数</li>\
-          <li>软件仅支持一台电脑登陆使用</li>\
-          <li>试用期过后半年49¥，全年89¥，不限下载次数</li>\
-        </ul>\
-        <h1><font color="yellow">付费通道</font></h1>\
-          <div>\
-            <font color="yellow">微信支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./img/weixin.png" width="240" height="320"/>\
-            <br/>\
-            <br>\
-            <font color="yellow">支付宝支付:请支付时务必备注您的</font><font color="red"><strong>VIP注册号</strong></font><br/>\
-            <img src="./img/zhifubao.jpg" width="240" height="320"/>\
-           </div>\
-        </body>\
-        </html>'
+        font1 = QFont()
+        font1.setPointSize(20) 
+        p1 = QPalette()
+        p1.setColor(QPalette.ColorRole.WindowText, QColor('red'))
 
-        self.text.setHtml(str)
-        layout1 = QHBoxLayout()
-        layout1.addWidget(self.text)
+
+        font2 = QFont()
+        font2.setPointSize(16) 
+        p2 = QPalette()
+        p2.setColor(QPalette.ColorRole.WindowText, QColor('blue'))
+
+
+        l1 = QLabel("牛牛飞天软件使用须知:")
+        l1.setFont(font1)
+        l1.setPalette(p1)
+
+        l2 = QLabel("   1)初次注册后可以免费使用1周,不限下载次数")
+        l3 = QLabel("   2)软件仅支持一台电脑登陆使用")
+        l4 = QLabel("   3)试用期过后半年49¥，全年89¥，不限下载次数")
+        l2.setFont(font2)
+        l3.setFont(font2)
+        l4.setFont(font2)
+
+        l5 = QLabel("付费通道")
+        l5.setFont(font1)
+        l5.setPalette(p2)
+
+        l6 = QLabel("  1)微信支付:请支付时务必备注您的VIP注册号:")
+        l6.setFont(font2)
+
+        weixinPng  = base64.b64decode(weixin_png)
+        # pyqt页面  base64转化QPixmap
+        weixinIcon = QPixmap()
+        weixinIcon.loadFromData(weixinPng)
+        weixinIcon.scaled(300, 350, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation); 
+
+        wx = QLabel(self)
+        wx.setPixmap(weixinIcon)  # 在label上显示图片
+        wx.setFixedSize(300, 350)
+
+        l7 = QLabel("  2)支付宝:请支付时务必备注您的VIP注册号:")
+        l7.setFont(font2)
+        
+        zhifubaoPng  = base64.b64decode(zhifubao_png)
+        # pyqt页面  base64转化QPixmap
+        zhifubaoIcon = QPixmap()
+        zhifubaoIcon.loadFromData(zhifubaoPng)
+        zhifubaoIcon.scaled(300, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation); 
+
+        zfb = QLabel(self)
+        zfb.setPixmap(zhifubaoIcon)  # 在label上显示图片
+        zfb.setFixedSize(300, 400)
 
         layout = QVBoxLayout()
-        layout.addLayout(layout1)
+        layout.addWidget(l1)
+        layout.addWidget(l2)
+        layout.addWidget(l3)
+        layout.addWidget(l4)
+        layout.addWidget(l5)
+        layout.addWidget(l6)
+        layout.addWidget(wx)
+        layout.addWidget(l7)
+        layout.addWidget(zfb)
+
         self.setLayout(layout)
 
 
@@ -804,18 +838,32 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("牛牛飞天-V2.0.6.8")
-        self.setWindowIcon(QIcon("./img/favicon.ico"))
+        self.setWindowIcon(QIcon("./favicon.ico"))
         self.resize(WIDTH,HEIGHT) 
 
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
         tabs.setMovable(False)
 
-        tabs.addTab(ShowStock("./img/stock.png"), "股票操作")
-        tabs.addTab(ShowFund("./img/fund.png"), "基金操作")
-        tabs.addTab(MonitorStock("./img/buy.png"), "盯盘告警")
-        tabs.addTab(BuyNow("./img/buy.png"), "续费入口")
-        tabs.addTab(Register("./img/rg.png"), "一键注册")
+        stock = base64.b64decode(stock_png)
+        fund = base64.b64decode(fund_png)
+        buy = base64.b64decode(buy_png)
+        rg  = base64.b64decode(rg_png)
+        # pyqt页面  base64转化QPixmap
+        iconStock = QPixmap()
+        iconStock.loadFromData(stock)
+        iconFund = QPixmap()
+        iconFund.loadFromData(fund)
+        iconBuy = QPixmap()
+        iconBuy.loadFromData(buy)
+        iconRg = QPixmap()
+        iconRg.loadFromData(rg)
+
+        tabs.addTab(ShowStock(iconStock), "股票操作")
+        tabs.addTab(ShowFund(iconFund), "基金操作")
+        tabs.addTab(MonitorStock(iconBuy), "盯盘告警")
+        tabs.addTab(BuyNow(iconBuy), "续费入口")
+        tabs.addTab(Register(iconRg), "一键注册")
 
         self.setCentralWidget(tabs)
         
@@ -828,7 +876,6 @@ def main():
    
 if __name__ == "__main__":
     logger.warning('starting...........')
-
     try:
        main()
     except Exception as e:
