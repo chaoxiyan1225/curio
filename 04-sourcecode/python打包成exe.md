@@ -87,3 +87,5 @@ pyqt页面  base64转化QPixmap<br>
 icon = QPixmap() <br>
 icon.loadFromData(logo_2)<br>
 self.label_logo.setPixmap(icon)
+
+https://p.vryunpan.cc/
