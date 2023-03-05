@@ -1,6 +1,7 @@
 from loguru import logger
+import datetime
 
-logger.add('niuniufeitian_{time}.log',rotation="100 MB", retention='10 days')
+logger.add(f'niuniufeitian_{datetime.datetime.now().year}-{datetime.datetime.now().month}-{datetime.datetime.now().day}.log',rotation="100 MB", retention='10 days')
 
 def debug(msg)->None:
     logger.debug(msg)

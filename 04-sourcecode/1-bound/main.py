@@ -16,8 +16,8 @@ import efinance as ef
 import Errors, logger
 from pictures import *
 
-WIDTH = 1200
-HEIGHT = 800
+WIDTH = 1000
+HEIGHT = 600
 PERIOD = 5  #默认5s一个检测周期
 
 # 600519 300750
@@ -74,10 +74,14 @@ class BaseWidget(QWidget):
         strA = ''
         for c in frame.columns.values:
             strA =f'{strA}<th>{c}</th>\n'
+            
+        logger.warning('fill the stock info')
 
         #是否按时间倒序排列
         if self.reverseSort:
            frame.sort_index(ascending=False,inplace=True)
+           
+        print(self.colorPos)
 
         strB = ''
         count = 0;
@@ -87,15 +91,15 @@ class BaseWidget(QWidget):
             if count >= self.showCnt:
                 break
 
-            count = 0
+            count1 = 0
             for column in frame.columns:
-                count = count + 1
+                count1 = count1 + 1
                 bc = ''
                 v = frame[column].get(index)
                 isDigital = isinstance(v, int) or isinstance(v, float)
-                if count in self.colorPos and isDigital and v < 0:
+                if count1 in self.colorPos and isDigital and v < 0:
                    bc = 'bgcolor="#00FF00"'
-                elif count in self.colorPos and isDigital and v > 0:
+                elif count1 in self.colorPos and isDigital and v > 0:
                    bc = 'bgcolor="#FF0000"'
 
                 strB = f'{strB}<th {bc}>{frame[column].get(index)}</th>'
@@ -173,15 +177,20 @@ class BaseWidget(QWidget):
            return
 
         # 600519 300750
-        isValid = self.CheckValid()
-        if isValid == False:
-           return 
+        
+        if SystemConf.isClientFree == False:
+           isValid = self.CheckValid()
+           if isValid == False:
+              return
+              
+        logger.warning(f'start query the  code:{codesInput}.........')
     
         self.preCheckResult = True
         type = self.cb.currentText()
         codes = list(map(int, codesInput.strip().split()))
-        
         self.dispatchByType(codes, type)
+        
+        logger.warning(f'query end  code: {codesInput}........')
 
 
     def refreshData(self):
@@ -308,7 +317,7 @@ class BuyNow(BaseWidget):
         l5.setFont(font1)
         l5.setPalette(p2)
 
-        l6 = QLabel("  1)微信支付:请支付时务必备注您的VIP注册号:")
+        l6 = QLabel("  微信支付:请支付时务必备注您的VIP注册号:")
         l6.setFont(font2)
 
         weixinPng  = base64.b64decode(weixin_png)
@@ -321,6 +330,7 @@ class BuyNow(BaseWidget):
         wx.setPixmap(weixinIcon)  # 在label上显示图片
         wx.setFixedSize(300, 350)
 
+        '''
         l7 = QLabel("  2)支付宝:请支付时务必备注您的VIP注册号:")
         l7.setFont(font2)
         
@@ -333,6 +343,7 @@ class BuyNow(BaseWidget):
         zfb = QLabel(self)
         zfb.setPixmap(zhifubaoIcon)  # 在label上显示图片
         zfb.setFixedSize(300, 400)
+        '''
 
         layout = QVBoxLayout()
         layout.addWidget(l1)
@@ -342,8 +353,8 @@ class BuyNow(BaseWidget):
         layout.addWidget(l5)
         layout.addWidget(l6)
         layout.addWidget(wx)
-        layout.addWidget(l7)
-        layout.addWidget(zfb)
+        #layout.addWidget(l7)
+        #layout.addWidget(zfb)
 
         self.setLayout(layout)
 
@@ -354,8 +365,11 @@ class ShowStock(BaseWidget):
         self.reverseSort = False
         self.colorPos.clear()
         if type == '股票信息':
+        
+           logger.warning('get the stock info')
            self.reverseSort = False
            frame = ef.stock.get_base_info(codes)
+           logger.warning('get the stock info end')
            self.fillStocksBase(frame , type)
         elif type == '1分钟K线':
            self.reverseSort = True
@@ -449,35 +463,27 @@ class ShowStock(BaseWidget):
 class ShowFund(BaseWidget):
    
     def filleFundBaseInfo(self, frames, type):
-
         tables = '';
         for frame in frames:
             strA = ''
             for c in frame.columns.values:
                 strA =f'{strA}<th>{c}</th>\n'
-          
-            #是否按时间倒序排列
-            if self.reverseSort:
-               frame.sort_index(ascending=False,inplace=True)
 
             strB = ''
-            count = 0;
             for index, row in frame.iterrows():
                 strB = f'{strB}<tr>'
-                count = count + 1
-                if count >= self.showCnt:
-                    break
 
                 for column in frame.columns:
                     strB = f'{strB}<th>{frame[column].get(index)}</th>'
                 strB = f'{strB}</tr>'
 
             width = WIDTH - 100
-            height = HEIGHT - 700
+            height = HEIGHT - 500
             table = f'<table border="1" cellpadding = "10" width={width} height={height}>\
                         <tr>{strA}</tr>\
                             {strB}\
                       </table>'
+                      
             tables = f'{tables}{table}<br><br>'
 
         strHtml = f'<html>\
@@ -488,11 +494,13 @@ class ShowFund(BaseWidget):
                            {tables}\
                         </body>\
                     </html>'
-
+        
         self.text.setHtml(strHtml)
+
 
     def dispatchByType(self, codes, type):
         self.reverseSort = False
+        self.colorPos.clear()
         if type == '基金信息':
            self.reverseSort = False
            frame1 = ef.fund.get_base_info(codes)
@@ -505,14 +513,16 @@ class ShowFund(BaseWidget):
            self.filleFundBaseInfo(frames, type)     
         elif type == '历史净值信息':
            self.reverseSort = False
+           self.colorPos.append(4) 
            frame = ef.fund.get_quote_history(codes[0])
-           self.fillStocksBase(frame, type)       
+           self.fillStocksBase(frame, type)          
         elif type == '全部公墓基金名单':
            self.reverseSort = False
            frame = ef.fund.get_fund_codes()
            self.fillStocksBase(frame, type)        
         elif type == '股票占比数据':
            self.reverseSort = False
+           self.colorPos.append(5) 
            frame = ef.fund.get_invest_position(codes[0])
            self.fillStocksBase(frame, type)
         elif type == '阶段涨跌幅度':
@@ -526,6 +536,7 @@ class ShowFund(BaseWidget):
         self.resize(WIDTH,HEIGHT)
         self.progressValue = 0
         self.showCnt = 200
+        self.colorPos = []
 
         self.stocks_label = QLabel("基金代码")
         self.stocks_code = QLineEdit("")
@@ -673,8 +684,8 @@ class MonitorStock(BaseWidget):
                 else:
                    strB = f'{strB}<th>----</th></tr>'
 
-            width = WIDTH - 100
-            height = HEIGHT - 700
+            width = WIDTH
+            height = HEIGHT - 500
             table = f'<table border="1" cellpadding = "10" width={width} height={height}>\
                         <tr>{strA}</tr>\
                             {strB}\
@@ -724,37 +735,6 @@ class MonitorStock(BaseWidget):
                     </html>'
 
         self.text.setHtml(strHtml)
-
-
-    def dispatchByType(self, codes, type):
-        self.reverseSort = False
-        if type == '基金信息':
-           self.reverseSort = False
-           frame1 = ef.fund.get_base_info(codes)
-           frame2 = ef.fund.get_realtime_increase_rate(f'{codes[0]}')
-           frame3 = ef.fund.get_types_percentage(codes[0])
-
-           frames = []
-           frames.append(frame1)
-           frames.append(frame2)
-           frames.append(frame3)
-           self.filleFundBaseInfo(frames, type)     
-        elif type == '历史净值信息':
-           self.reverseSort = False
-           frame = ef.fund.get_quote_history(codes[0])
-           self.fillStocksBase(frame, type)       
-        elif type == '全部公墓基金名单':
-           self.reverseSort = False
-           frame = ef.fund.get_fund_codes()
-           self.fillStocksBase(frame, type)        
-        elif type == '股票占比数据':
-           self.reverseSort = False
-           frame = ef.fund.get_invest_position(codes[0])
-           self.fillStocksBase(frame, type)
-        elif type == '阶段涨跌幅度':
-           self.reverseSort = True
-           frame = ef.fund.get_period_change(codes[0])
-           self.fillStocksBase(frame, type)
 
     def initUI(self):
 

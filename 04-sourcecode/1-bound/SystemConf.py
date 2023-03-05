@@ -1,6 +1,7 @@
 #coding=utf8
 
-projectZip = 'https://github.com/chaoxiyan1225/stockconf/archive/refs/heads/main.zip'
+#projectZip = 'https://github.com/chaoxiyan1225/stockconf/archive/refs/heads/main.zip'
+projectZip =  'https://gitcode.net/ycx1225/stockconf/-/archive/master/stockconf-master.zip' 
 userConf = 'users.conf'
 softwareConf = 'software.conf'
 contackQQ = '59478148'
@@ -11,3 +12,5 @@ emailFrom = email
 emailPwd = 'VxqRl8Zr1ekcTvzxSndoUw=='
 emailSender = 'SPEEEEEEED'
 contackUs = f'QQ:{contackQQ} , email:{email}'
+
+isClientFree = False
