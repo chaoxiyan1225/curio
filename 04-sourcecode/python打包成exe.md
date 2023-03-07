@@ -89,3 +89,6 @@ icon.loadFromData(logo_2)<br>
 self.label_logo.setPixmap(icon)
 
 https://p.vryunpan.cc/
+
+# 打包提速 
+https://zhuanlan.zhihu.com/p/133303836/
