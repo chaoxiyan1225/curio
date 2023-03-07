@@ -42,8 +42,9 @@ class MainWindow(QMainWindow):
         iconIcon = QPixmap()
         iconIcon.loadFromData(icon)
 
-        self.setWindowTitle("牛牛飞天-V2.0.6.8")
+        self.setWindowTitle("牛牛飞天-V2.0.7.8")
         self.setWindowIcon(QIcon(iconIcon))
+        
         self.resize(WIDTH,HEIGHT) 
 
         tabs = QTabWidget()

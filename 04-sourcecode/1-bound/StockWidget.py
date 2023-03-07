@@ -272,10 +272,8 @@ class SuggestStock(BaseWidget):
          return
 
    def initUI(self):
-        font1 = QFont()
-        font1.setPointSize(16) 
         p1 = QPalette()
-        p1.setColor(QPalette.ColorRole.WindowText, QColor('white'))
+        p1.setColor(QPalette.ColorRole.WindowText, QColor('black'))
 
         self.setWindowTitle("当前位于荐股界面")
         self.resize(WIDTH,HEIGHT)
@@ -286,41 +284,32 @@ class SuggestStock(BaseWidget):
         self.needAlarm = False
 
         self.rise_label = QLabel("涨幅区间")
-        self.rise_label.setFont(font1)
         self.rise_label.setPalette(p1)
 
         self.low = QLineEdit("")
         self.low.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
         self.lowa = QLabel("%")
-        self.lowa.setFont(font1)
 
         self.rise_split = QLabel("-")
-        self.rise_split.setFont(font1)
 
         self.high = QLineEdit("")
         self.high.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
         self.higha = QLabel("%")
-        self.higha.setFont(font1)
 
         self.change_label = QLabel("换手率区间")
-        self.change_label.setFont(font1)
         self.change_label.setPalette(p1)
 
         self.lowChange = QLineEdit("")
         self.lowChange.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
         self.lowaChange = QLabel("%")
-        self.lowaChange.setFont(font1)
 
         self.change_split = QLabel("-")
-        self.change_split.setFont(font1)
 
         self.hignChange = QLineEdit("")
         self.hignChange.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
         self.highaChange = QLabel("%")
-        self.highaChange.setFont(font1)
 
         labelShu = QLabel("     |     ")
-        labelShu.setFont(font1)
         labelShu.setPalette(p1)
 
         self.layout0 =  QHBoxLayout()
@@ -339,31 +328,26 @@ class SuggestStock(BaseWidget):
         self.layout0.addWidget(self.highaChange)
 
         self.volume_label = QLabel("量比区间")
-        self.volume_label.setFont(font1)
         self.volume_label.setPalette(p1)
 
         self.lowVolume = QLineEdit("")
         self.lowVolume.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
         self.volume_split = QLabel("-")
-        self.volume_split.setFont(font1)
 
         self.highVolume = QLineEdit("")
         self.highVolume.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
 
         self.dynamicPE_label = QLabel("动态市盈率")
-        self.dynamicPE_label.setFont(font1)
         self.dynamicPE_label.setPalette(p1)
 
         self.lowDynamicPE = QLineEdit("")
         self.lowDynamicPE.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
         self.dynamicPE_split = QLabel("-")
-        self.dynamicPE_split.setFont(font1)
 
         self.highDynamicPE = QLineEdit("")
         self.highDynamicPE.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
 
         labelShu1 = QLabel("     |     ")
-        labelShu1.setFont(font1)
         labelShu1.setPalette(p1)
 
         self.layout1 =  QHBoxLayout()
@@ -382,7 +366,6 @@ class SuggestStock(BaseWidget):
 
         p2 = QPalette()
         p2.setColor(QPalette.ColorRole.WindowText, QColor('blue'))
-        self.msg.setFont(font1)
         self.msg.setPalette(p2)
 
         self.queryButton = QPushButton("点我查询")

@@ -813,18 +813,18 @@ class MonitorStock(BaseWidget):
 
 
 class MainWindow(QMainWindow):
-    
-   def __init__(self):
-        super().__init__()
-
+                            
+   def __init__(self):      
+        super().__init__()  
+                            
         self.setWindowTitle("牛牛飞天-V2.0.6.8")
         self.setWindowIcon(QIcon("./favicon.ico"))
         self.resize(WIDTH,HEIGHT) 
-
-        tabs = QTabWidget()
+                            
+        tabs = QTabWidget() 
         tabs.setTabPosition(QTabWidget.TabPosition.North)
         tabs.setMovable(False)
-
+                            
         stock = base64.b64decode(stock_png)
         fund = base64.b64decode(fund_png)
         buy = base64.b64decode(buy_png)
@@ -834,31 +834,32 @@ class MainWindow(QMainWindow):
         iconStock.loadFromData(stock)
         iconFund = QPixmap()
         iconFund.loadFromData(fund)
-        iconBuy = QPixmap()
+        iconBuy = QPixmap() 
         iconBuy.loadFromData(buy)
-        iconRg = QPixmap()
+        iconRg = QPixmap()  
         iconRg.loadFromData(rg)
-
+                            
         tabs.addTab(ShowStock(iconStock), "股票操作")
         tabs.addTab(ShowFund(iconFund), "基金操作")
         tabs.addTab(MonitorStock(iconBuy), "盯盘告警")
         tabs.addTab(BuyNow(iconBuy), "续费入口")
         tabs.addTab(Register(iconRg), "一键注册")
-
+                            
         self.setCentralWidget(tabs)
-        
-def main():
-    # 整个app的入口    
+                            
+def main():                 
+    # 整个app的入口              
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    app.exec()
-   
-if __name__ == "__main__":
+    window = MainWindow()   
+    window.show()           
+    app.exec()              
+                            
+if __name__ == "__main__":  
     logger.warning('starting...........')
-    try:
-       main()
-    except Exception as e:
-       logger.error(e)
-
+    try:                    
+       main()               
+    except Exception as e:  
+       logger.error(e)      
+                            
     logger.warning('finishing.........')
+                            

@@ -13,7 +13,7 @@ import efinance as ef
 import Errors, logger
 from pictures import *
 
-WIDTH = 1200
+WIDTH = 1000
 HEIGHT = 600
 PERIOD = 5  #默认5s一个检测周期
 
