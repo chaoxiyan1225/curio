@@ -18,10 +18,10 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller
 
 # 二、Python 打包可执行exe文件
 
+下面的路径要换成mac下的路径,路径是ico文件的绝对位置，在我们的工程里面就是 img/favicon.ico文件的位置
 
-pyinstaller -F -w -i g:\2345Downloads\logo.ico login.py 
---hidden-import doTest.py --hidden-import itemContent --hidden-import queryDB.py 
---hidden-import view.py --hidden-import Applications.py --hidden-import mainWindow.py
+pyinstaller -F -w -i g:\2345Downloads\logo.ico main.py 
+
 解释：进入到cmd命令行中，然后cd到我们的项目代码所在的具体的目录，在项目代码所在的目录中，使用上述代码进行打包。
 
 其中，
