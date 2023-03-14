@@ -5,9 +5,9 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 
-from SystemContrl import *
-from UserControl import *
-from BaseWidget import *
+from manager.SystemContrl import *
+from manager.UserControl import *
+from widgets.BaseWidget import *
 
 import efinance as ef
 from pictures import *

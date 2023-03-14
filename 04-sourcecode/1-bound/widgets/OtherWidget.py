@@ -4,16 +4,16 @@ from operator import ne
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-import UserUITool, CommonTool
+import utils.UserUITool, utils.CommonTool
 from threading import Thread
 
-from SystemContrl import *
-from UserControl import *
+from manager.SystemContrl import *
+from manager.UserControl import *
 
 import efinance as ef
-import Errors, logger
+import config.Errors, utils.logger
 from pictures import *
-from BaseWidget import *
+from widgets.BaseWidget import *
 
 class Register(BaseWidget):
     def checkValid(self):

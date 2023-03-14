@@ -5,12 +5,12 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 
-from SystemContrl import *
-from UserControl import *
+from manager.SystemContrl import *
+from manager.UserControl import *
 import time
-from BaseWidget import *
+from widgets.BaseWidget import *
 import efinance as ef
-import logger
+import utils.logger
 from pictures import *
 
 # 600519 300750
@@ -267,7 +267,7 @@ class SuggestStock(BaseWidget):
          frame = ef.stock.get_realtime_quotes()
          self.fillMatchStocks(frame)
       else:
-         print("need show box")
+         #print("need show box")
          QMessageBox.question(self, "错误提示", "参数错误已经红色标记出", QMessageBox.StandardButton.Yes) 
          return
 

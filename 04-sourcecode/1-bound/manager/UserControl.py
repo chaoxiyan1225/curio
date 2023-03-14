@@ -7,11 +7,13 @@ import base64
 from Crypto.Cipher import AES
 from io import BytesIO
 from zipfile import ZipFile
-import CommonTool
+import utils.CommonTool
 import time
-import SystemConf
-import Errors, logger
+import config.SystemConf
+import config.Errors, utils.logger
 
+
+logger = utils.logger
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
     result.__dict__ = parseData
@@ -56,7 +58,7 @@ class UserContrl:
 
 
    # userId 就是本机的mac地址，原则上是一个账号就对应一个mac地址
-   def getUserConfFromGit(self, userId :str, projectZip = SystemConf.projectZip):
+   def getUserConfFromGit(self, userId :str, projectZip = config.SystemConf.projectZip):
        
        try:
           ssl._create_default_https_context = ssl._create_unverified_context

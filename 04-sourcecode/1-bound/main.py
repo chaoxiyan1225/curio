@@ -6,19 +6,21 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 import sys
 
-from SystemContrl import *
-from UserControl import *
-from FundWidget import *
-from StockWidget import *
-from OtherWidget import *
+from manager.SystemContrl import *
+from manager.UserControl import *
+from widgets.FundWidget import *
+from widgets.StockWidget import *
+from widgets.OtherWidget import *
 
 import time
-import logger
+import utils.logger
 from pictures import *
 
 # 600519 300750
 
 # 一分钟K线：6 7 11
+
+logger = utils.logger
 
 class MainWindow(QMainWindow):
     

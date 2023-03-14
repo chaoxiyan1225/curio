@@ -12,6 +12,8 @@ import time
 import SystemConf
 import Errors
 
+from logger import *
+
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
     result.__dict__ = parseData
@@ -77,14 +79,14 @@ class SoftWareContrl:
           headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
           req = urllib.request.Request(gitZipFileName,headers=headers)
           
-          #print(f'print headers {headers}')
+          #logger.warning(f'logger.warning headers {headers}')
           userRead = urllib.request.urlopen(req, timeout=6)
           data = userRead.read()
-          #print(f'data : {data}')
+          #logger.warning(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
           if not len(files):
-             print(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.warning(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              status = ""
              return None, Errors.S_InvalidFileContent
           confFile = None
@@ -93,17 +95,17 @@ class SoftWareContrl:
               if confFileName in file:
                  confFile = file
                  break     
-          #print(f'the fils : {files}')
+          #logger.warning(f'the fils : {files}')
 
           with zipFile.open(confFile, 'r') as tmpFile:
              jsonData = tmpFile.read()
              if not jsonData:
-                print(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+                logger.warning(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
                 return None, Errors.S_InvalidFileContent
 
              confJson = json.loads(jsonData.decode().strip('\t\n'))
              if not confJson:
-                print(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
+                logger.warning(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
                 return None, Errors.S_InvalidFileContent
 
              if jsonObject:
@@ -114,7 +116,7 @@ class SoftWareContrl:
              
           return None, Errors.S_ParseFail
        except Exception as e:
-             print(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.warning(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              return None, Errors.S_ParseFail
 
    '''
@@ -123,14 +125,20 @@ class SoftWareContrl:
    def clientValid(self):
       softWareConf, error = self.loadSoftWareInfoFromGit()
       if not softWareConf or error != Errors.SUCCESS:
-         return False, error
+         logger.error('load conf from github fail')
+         return error
+      
+      if softWareConf.isFree.lower() == 'true':
+         logger.warning('the software isFree to use')
+         return  Errors.S_ClientFreeUse
 
       if softWareConf.clientEnable.lower() == 'false':
-         return False, Errors.S_Forbidden
+         logger.error('all client cannot run, see software.conf for more info')
+         return Errors.S_Forbidden
 
-      if SystemConf.clientVersion <= softWareConf.currentVersion:
-         print(f'the client verion is too low, client:{SystemConf.clientVersion}. and server version: {softWareConf.currentVersion}')
-         return  False, Errors.C_VersionTooLow
+      if SystemConf.clientVersion in softWareConf.versionsForbidden:
+         logger.error(f'the client verion not alow, client:{SystemConf.clientVersion}. and server version see software.conf')
+         return Errors.C_VersionTooLow
       
-
-      return True, Errors.SUCCESS
+      logger.warning('the client valid success')
+      return Errors.SUCCESS

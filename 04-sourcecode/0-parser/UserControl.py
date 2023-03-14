@@ -12,6 +12,8 @@ import time
 import SystemConf
 import Errors
 
+from logger import *
+
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
     result.__dict__ = parseData
@@ -41,7 +43,7 @@ class UserContrl:
    '''
    def CheckUserValid(self, userConf, userLogin = None):
       if not userConf:
-         print(f'the userConf is InValid.')
+         logger.warning(f'the userConf is InValid.')
          return  False, Errors.C_LoginFail
       
       #if userConf.name != userLogin.name or userConf.passwd != userLogin.passwd:
@@ -63,14 +65,14 @@ class UserContrl:
           headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
           req = urllib.request.Request(SystemConf.projectZip, headers=headers)
           
-          #print(f'print headers {headers}')
+          #logger.warning(f'logger.warning headers {headers}')
           userRead = urllib.request.urlopen(req, timeout=6)
           data = userRead.read()
-          #print(f'data : {data}')
+          #logger.warning(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
           if not len(files):
-             print(f'down load conf error!')
+             logger.warning(f'down load conf error!')
 
              status = ""
              return None, Errors.S_DownLoadError
@@ -84,17 +86,17 @@ class UserContrl:
           with zipFile.open(userConfFile, 'r') as userFile:
              jsonData = userFile.read()
              if not jsonData:
-                print(f'the conf has no data.exit!')
+                logger.warning(f'the conf has no data.exit!')
                 return None, Errors.S_InvalidFileContent
              
              parseData = json.loads(jsonData.decode().strip('\t\n'))
              if userId not in parseData:
-                print(f'the userId{userId} 不存在')
+                logger.warning(f'the userId{userId} 不存在')
                 return None, Errors.C_InvalidUser.append(f'userId{userId} 不存在')    
 
              userInfoJson = parseData[userId]
              if not userInfoJson:
-                print(f'the user not register, contack XXX ') 
+                logger.warning(f'the user not register, contack XXX ') 
                 return None, Errors.C_InvalidUser    
              
              userInfo = ParseJsonToObj(userInfoJson, UserInfo)
@@ -103,7 +105,7 @@ class UserContrl:
           return None, Errors.S_UnknowError
 
        except Exception as e:
-          print("parse userInfo fail ",  str(e))
+          logger.warning("parse userInfo fail ",  str(e))
           return None, Errors.S_ParseFail.append(f'userId:[{userId}]')
 
    def LoginCheck(self, passwd = ''):
@@ -114,7 +116,7 @@ class UserContrl:
        
       if error == Errors.C_InvalidUser:
           #CommonTool.sendRegisterMsg()
-          print(f'客户端:[{macId}]未注册,请先注册再使用')
+          logger.warning(f'客户端:[{macId}]未注册,请先注册再使用')
           return error
 
       while error == Errors.S_DownLoadError and retryCnt > 0:
@@ -125,7 +127,7 @@ class UserContrl:
               break
 
       if error != Errors.SUCCESS or not userInfo:
-         print(f'请联系技术支持:{SystemConf.contackUs}, 并附加UserId:[{macId}]')
+         logger.warning(f'请联系技术支持:{SystemConf.contackUs}, 并附加UserId:[{macId}]')
          CommonTool.sendClientLoginFailMsg(error.toString())
          return error
 
@@ -133,21 +135,21 @@ class UserContrl:
        #欠费了
       if error == Errors.C_Arrearage:
          #需要给界面返回欠费信息
-         print(f'当前欠费，请续费，续费操作请参考:')
+         logger.warning(f'当前欠费，请续费，续费操作请参考:')
          return error
 
-      print(f'登陆成功，可以使用软件, {userInfo.toString()}')
+      logger.warning(f'登陆成功，可以使用软件, {userInfo.toString()}')
       return Errors.SUCCESS
 
    def clickToRegister(self, email, tel = ''):
 
       if not email or CommonTool.emailRight(email) == False:
-         print(f'输入的邮箱不正确或者格式错误：{email}')
+         logger.warning(f'输入的邮箱不正确或者格式错误：{email}')
          return Errors.C_EmailWrong
       
       success = CommonTool.sendRegisterMsg(email, tel) 
       if not success:
-         print(f'第二次发送')
+         logger.warning(f'第二次发送')
          sucess = CommonTool.sendRegisterMsg(email, tel)
       
       if not success:

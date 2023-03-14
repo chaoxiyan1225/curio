@@ -1,6 +1,8 @@
 #coding=utf8
 
-projectZip = 'https://github.com/chaoxiyan1225/vedioprocess/archive/refs/heads/main.zip'
+#projectZip = 'https://github.com/chaoxiyan1225/vedioprocess/archive/refs/heads/main.zip'
+
+projectZip =  'https://gitcode.net/ycx1225/videoconf/-/archive/master/videoconf-master.zip'
 userConf = 'users.conf'
 softwareConf = 'software.conf'
 adviceurlConf = 'adviceurl.json'

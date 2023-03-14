@@ -5,12 +5,12 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 
-from SystemContrl import *
-from UserControl import *
+from manager.SystemContrl import *
+from manager.UserControl import *
 import time
 
 import efinance as ef
-import Errors, logger
+import config.Errors, utils.logger
 from pictures import *
 
 WIDTH = 1000
@@ -69,7 +69,7 @@ class BaseWidget(QWidget):
         if self.reverseSort:
            frame.sort_index(ascending=False,inplace=True)
            
-        print(self.colorPos)
+        #print(self.colorPos)
 
         strB = ''
         count = 0;

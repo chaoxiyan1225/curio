@@ -9,11 +9,11 @@ import multitasking, threading # 用于多线程操作
 from retry import retry# 导入 retry 库以方便进行下载出错重试
 from bs4 import BeautifulSoup
 
+from logger import *
+
 signal.signal(signal.SIGINT, multitasking.killall)
 
 from loguru import logger
-
-logger.add('LuPianShenQI_{time}.log',rotation="100 MB", retention='10 days')
 
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
@@ -54,8 +54,15 @@ class  VedioDownLoadProcesser:
             os.mkdir(download_path)
             
         #新建日期文件夹
-        download_path = os.path.join(download_path, datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
-        #print download_path
+        
+        addPath = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        if not self.name:
+           addPath = self.name
+        
+        
+        download_path = os.path.join(download_path, addPath)
+        #logger.warning download_path
         os.mkdir(download_path)
         
         global download_ts
@@ -130,7 +137,7 @@ class  VedioDownLoadProcesser:
 
             # 分块
             parts = split(0, file_size, each_size)
-            print(f'分块数：{len(parts)}')
+            logger.warning(f'分块数：{len(parts)}')
             # 创建进度条
             bar = tqdm(total=file_size, desc=f'下载文件：{file_name}')
             for part in parts:
@@ -159,7 +166,7 @@ class  VedioDownLoadProcesser:
         for index, url in enumerate(urlList):  
             taskMapNum = index % useThreadCnt
             taskList[taskMapNum][index] = url
-            #print("urlis :"+ url)
+            #logger.warning("urlis :"+ url)
             '''
             response = requests.head(url)
             file_size = response.headers.get('Content-Length')
@@ -168,7 +175,7 @@ class  VedioDownLoadProcesser:
                    raise ValueError('该文件不支持多线程分段下载！')
                totalFileSize = totalFileSize +file_size
             '''
-        #print(f'taskList: {taskList}')
+        #logger.warning(f'taskList: {taskList}')
             
         return useThreadCnt, len(urlList),taskList
         
@@ -292,6 +299,7 @@ class  VedioDownLoadProcesser:
         os.system('del /Q *.ts')
         
         logger.warning('转换结束')
+        os.rmdir(download_ts)
 
 
     #解析超链接打开页面后的子超链接
@@ -311,7 +319,7 @@ class  VedioDownLoadProcesser:
         mycount=0
         #查找文档中所有a标签
         for k in soup.find_all('a'):
-            #print(k)
+            #logger.warning(k)
             #查找href标签
             link=k.get('href')
             # 过滤没找到的
@@ -406,28 +414,29 @@ class  VedioDownLoadProcesser:
         #把 TS files 合并为一个mp4文件
         self.mergeTs2MP4(mp4Name)
 
-     
-    def downLoadStart(self, url, mp4Name):
+    def downLoadStart(self, url, mp4Name = None):
         #创建下载路径等准备
         self.init()
         self.downSuccess = 0
         self.downTotal = 0
+        
+        self.name = mp4Name
 
         m3u8Ulrs = set()
         mp4Urls = set()
         if '.m3u8' in url:
-           print(f'原始URL只含一个视频文件{url}')
+           logger.warning(f'原始URL只含一个视频文件{url}')
            self.tsDownload1By1(url, f'{mp4Name}')
         elif '.mp4' in url:
-           print(f'原始URL只含一个mp4视频文件{url}')
+           logger.warning(f'原始URL只含一个mp4视频文件{url}')
            self.mp4DownLoad1By1(url, f'{mp4Name}')
         else:
            m3u8Ulrs, mp4Urls = self.parseSubUrls(url)        
            if len(m3u8Ulrs) == 0 and len(mp4Urls) == 0:
-             print(f'url{url},无法解析出 m3u8链接或者mp4链接')
+             logger.warning(f'url{url},无法解析出 m3u8链接或者mp4链接')
              return
             
-        print(f'the url:{url}，共含m3u8文件{len(m3u8Ulrs)}, mp4的文件个数{len(mp4Urls)}')
+        logger.warning(f'the url:{url}，共含m3u8文件{len(m3u8Ulrs)}, mp4的文件个数{len(mp4Urls)}')
 
         #串行一一下载
         count = 0
@@ -462,7 +471,7 @@ if __name__ == '__main__':
     
     totalCost = (end - start) / 60
     
-    print(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
+    logger.warning(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
     
     #merge_file("E:\\sourcecode\\download\\20230114_212551\\tsfile")
 '''

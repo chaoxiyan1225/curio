@@ -7,13 +7,15 @@ import uuid
 import base64 
 from Crypto.Cipher import AES
 
+import utils.logger as logger
+
 # smtplib 用于邮件的发信动作
 import smtplib
 # email 用于构建邮件内容
 from email.mime.text import MIMEText
 # 构建邮件头
 from email.header import Header
-import SystemConf
+import config.SystemConf
 import re
 
 iv =  '5947814788888888'
@@ -104,7 +106,7 @@ def sendClientLoginFailMsg(errorMsg:str, email:str = ''):
     return sendMailByWangyi(subject, content)
 
 
-def sendMailByWangyi(subject:str, content:str, From = SystemConf.emailFrom, To =  SystemConf.emailFrom) -> bool:
+def sendMailByWangyi(subject:str, content:str, From = config.SystemConf.emailFrom, To =  config.SystemConf.emailFrom) -> bool:
     message = MIMEText(content, "plain", "utf-8")
     message["Accept-Language"]="zh-CN"
     message["Accept-Charset"]="ISO-8859-1,utf-8"
@@ -117,10 +119,10 @@ def sendMailByWangyi(subject:str, content:str, From = SystemConf.emailFrom, To =
         smtp = smtplib.SMTP_SSL("smtp.163.com", 994)  
         smtp.login(SystemConf.emailFrom, AES_Decode(SystemConf.emailPwd))
         smtp.sendmail(SystemConf.emailFrom, [To], message.as_string())
-        print(f'发送邮件成功: {To}！！')
+        logger.warning(f'发送邮件成功: {To}！！')
         ret = True
     except smtplib.SMTPException as e:
-        print(f"无法发送邮件{To}: str{e}")
+        logger.error(f"无法发送邮件{To}: str{e}")
     finally:
         smtp.quit()
         return ret

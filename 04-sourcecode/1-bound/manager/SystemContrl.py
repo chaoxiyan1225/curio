@@ -6,14 +6,17 @@ import ssl
 import base64 
 from Crypto.Cipher import AES
 from io import BytesIO
+
 from zipfile import ZipFile
 #import AesTool
 import time
-import SystemConf
-import Errors
-import logger
+import config.SystemConf
+import config.Errors
+import utils.logger
 
-
+logger = utils.logger
+SystemConf = config.SystemConf
+Errors = config.Errors
 def ParseJsonToObj(parseData, yourCls):
     result = yourCls()
     result.__dict__ = parseData
@@ -36,7 +39,7 @@ class SofeWareInfo:
 
 class SoftWareContrl:
 
-   def loadSoftWareInfoFromGit(self,  softwareConf = SystemConf.softwareConf, projectZip = SystemConf.projectZip):
+   def loadSoftWareInfoFromGit(self,  softwareConf = config.SystemConf.softwareConf, projectZip = config.SystemConf.projectZip):
        return self.loadJsonConfFromGit(softwareConf, projectZip, SofeWareInfo)
 
    def loadJsonConfFromGit(self, confFileName, gitZipFileName, jsonObject = None):

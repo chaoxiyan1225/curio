@@ -4,7 +4,7 @@ import requests, json
 import uuid
 import base64 
 
-import SystemConf
+import config.SystemConf
 import re
 
 def IsValidUrl(url:str )->bool:
