@@ -1,0 +1,46 @@
+{
+    "四川省人民医院": {
+        "url": "https://www.samsph.com/expert/",
+        "next_page_key": "/html/body/div[2]/div/div/div[4]/a[7]",
+        "page_from": 1,
+        "page_to": 1,
+        "box_xpath": "/html/body/div[2]/div/div/div[3]/div/ul/li[{}]/div[1]/a",
+        "box_from": 1,
+        "box_to": 24,
+        "name_xml": "/html/body/div[3]/div/div/div/div[1]/h1",
+        "resume_xml": "/html/body/div[3]/div/div/div/div[1]/p[1]",
+        "desc_xml": "/html/body/div[3]/div/div/div/div[1]/p[2]",
+        "parser": "ShengHospitalParse",
+        "enable": false
+    },
+
+    "成都市第二人民医院": {
+            "url":"https://www.cd2120.com/physician/",
+            "next_page_key":"/html/body/div[2]/div/div[5]/a[14]",
+            "page_from": 1,
+            "page_to": 1,
+            "box_xpath":"/html/body/div[2]/div/div[4]/div/ul/li[{}]/a",
+            "box_from": 1,
+            "box_to": 15,
+            "name_xml":   "/html/body/div/div/div[1]/div/div/div[2]/h1",
+            "resume_xml": "/html/body/div/div/div[1]/div/div/div[2]/p[1]",
+            "desc_xml":   "/html/body/div/div/div[1]/div/div/div[2]/p[2]",
+            "parser": "ErHospitalParse",
+            "enable": false
+    },
+
+    "成都市第一人民医院": {
+        "url": "https://www.cdzxy.com/physician/",
+        "next_page_key": "/html/body/div[2]/div/div[2]/div/div[2]/a[7]",
+        "page_from": 1,
+        "page_to": 1,
+        "box_xpath": "/html/body/div[2]/div/div[2]/div/div[1]/div[2]/ul/li[{}]/a",
+        "box_from": 1,
+        "box_to": 15,
+        "name_xml": "/html/body/div[1]/div[1]/div/div/h1",
+        "resume_xml": "",
+        "desc_xml": "/html/body/div[1]/div[1]/div/div/p",
+        "enable": true,
+        "parser": "YiHospitalParse"
+    }
+}
