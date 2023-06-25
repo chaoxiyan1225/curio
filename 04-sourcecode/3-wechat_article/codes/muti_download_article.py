@@ -3,7 +3,7 @@
 import json
 import re
 import time
-from commonutil.mutithreadtask import MultiThreadHandler
+from utils.mutithreadtask import MultiThreadHandler
 from bs4 import BeautifulSoup
 import requests
 import os
