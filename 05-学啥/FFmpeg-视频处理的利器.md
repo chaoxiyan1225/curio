@@ -3,3 +3,5 @@ FFmpeg是一套可以用来记录、转换数字音频、视频，并能将其�
 [三十分钟带你熟悉](https://zhuanlan.zhihu.com/p/89872960)
 
 [使用指导文档](https://ffmpeg.xianwaizhiyin.net/base-ffmpeg/ffmpeg-mux.html)_
+
+https://itsfoss.com/ffmpeg/
