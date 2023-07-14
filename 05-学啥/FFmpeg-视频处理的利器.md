@@ -29,5 +29,10 @@ ffmpeg -i input.mp4 -filter:v "minterpolate='mi_mode=mci:mc_mode=aobmc:mb_size=8
 
 [FFmpeg命令行滤镜使用]("https://www.shangmayuan.com/a/46d1902c245842e586ddea9b.html")
 
-href="https://blog.csdn.net/n66040927/article/details/84525611">ffmpeg命令行使用nvidia CUDA scaling高速转分辨率转码(libnpp)</a><br /> <a href="https://www.cnblogs.com/carle-09/p/11736390.html">FFmpeg—源码编译</a><br /> <a href="https://www.jianshu.com/p/c56d5d79ce8b">FFmpeg常用命令</a><br /> <a href="https://eyehere.net/2019/the-complete-guide-for-using-ffmpeg-in-linux/">Linux上的ffmpeg完全使用指南</a><br /> <a href="https://zhuanlan.zhihu.com/p/168240163">视频和视频帧&#xff1a;FFMPEG 硬件解码API介绍</a></p> 
+[ffmpeg命令行使用nvidia CUDA scaling高速转分辨率转码(libnpp)]("https://blog.csdn.net/n66040927/article/details/84525611"）
+[FFmpeg—源码编译]("https://www.cnblogs.com/carle-09/p/11736390.html")
+[FFmpeg常用命令]("https://www.jianshu.com/p/c56d5d79ce8b")
+[Linux上的ffmpeg完全使用指南]("https://eyehere.net/2019/the-complete-guide-for-using-ffmpeg-in-linux/")
+[视频和视频帧&#xff1a;FFMPEG 硬件解码API介绍]("https://zhuanlan.zhihu.com/p/168240163") )
+
 
