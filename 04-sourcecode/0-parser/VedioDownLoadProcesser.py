@@ -79,7 +79,7 @@ class  VedioDownLoadProcesser:
             self.vedioDownLoader.downTotal = 0
             self.vedioDownLoader.lock.release()
 
-        def split(start: int, end: int, step: int) -> list[tuple[int, int]]:
+        def split(self, start: int, end: int, step: int) -> list[tuple[int, int]]:
             # 分多块
             parts = [(start, min(start+step, end))
                      for start in range(0, end, step)]
@@ -88,7 +88,7 @@ class  VedioDownLoadProcesser:
             self.vedioDownLoader.lock.release()
             return parts
 
-        def get_file_size(url: str, raise_error: bool = False) -> int:
+        def get_file_size(self, url: str, raise_error: bool = False) -> int:
             response = requests.head(url)
             file_size = response.headers.get('Content-Length')
             if file_size is None:
@@ -97,12 +97,12 @@ class  VedioDownLoadProcesser:
                 return file_size
             return int(file_size)
 
-        def download(url: str, file_name: str, retry_times: int = 3, each_size=16*MB) -> None:
+        def download(self, url: str, file_name: str, retry_times: int = 3, each_size=16*MB) -> None:
 
             #最终MP4文件的文件名
             mp4Name = os.path.join(download_path, file_name + ".mp4")
             f = open(mp4Name, 'ab')
-            file_size = get_file_size(url)
+            file_size = self.get_file_size(url)
 
             @retry(tries=retry_times)
             @multitasking.task
