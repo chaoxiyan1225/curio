@@ -92,3 +92,6 @@ https://p.vryunpan.cc/
 
 # 打包提速 
 https://zhuanlan.zhihu.com/p/133303836/
+# 解决打包慢
+https://blog.51cto.com/micai01/5890445
+
