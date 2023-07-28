@@ -2,6 +2,8 @@ import customtkinter
 import os
 from PIL import Image
 import webbrowser
+import time
+import asyncio
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
@@ -13,7 +15,7 @@ class App(customtkinter.CTk):
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "imgs")
 
         self.logo_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "logo.png")), size=(26, 26))
-        self.large_test_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
+        #self.large_test_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
         self.image_icon_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "image_icon_light.png")), size=(PIC_SIZE, PIC_SIZE))
         self.download_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "download.png")),dark_image=Image.open(os.path.join(image_path, "download.png")), size=(PIC_SIZE, PIC_SIZE))
         self.shares_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "share.png")),dark_image=Image.open(os.path.join(image_path, "share.png")), size=(PIC_SIZE, PIC_SIZE))
@@ -104,7 +106,7 @@ class App(customtkinter.CTk):
 
         progressbar = customtkinter.CTkProgressBar(self.download_frame)
         progressbar.grid(row=5, column=0, columnspan=12, padx=20, pady=20, sticky="nsew")
-        progressbar.set(0.9)
+        progressbar.set(0.01)
 
         buttonOpen = customtkinter.CTkButton(self.download_frame, text="Open", image=self.more_img)
         buttonOpen.grid(row=5, column=12, columnspan=1, padx=(20,10), pady=20)
@@ -114,25 +116,6 @@ class App(customtkinter.CTk):
         self.shares_frame.grid_columnconfigure((1), weight=1)
         self.shares_frame.grid_rowconfigure((1), weight=0)
 
-
-        table = []
-        row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
-    
-        for r in range(4):
-            for c in range(4):
-                widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="Language Select:",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      anchor="w")
-                widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
-                row.append(widget)    #把每次创建的Entry对象添加到row列表里
-            table.append(row)       #把row列表添加到table列表里，使table成为一个二维列表。
-        
-        ##加个表头试一下
-        field = ['url','suggest','website', 'suggest']
-        for t in field:
-            table[0][field.index(t)].configure(
-                            textvariable=customtkinter.StringVar(value=t)
-                            )
 
         # create register frame
         self.register_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
@@ -190,6 +173,10 @@ class App(customtkinter.CTk):
         self.select_frame_by_name("download")
         self.change_appearance_mode_event("light")
 
+        self.after(1000, self.async_load_urls)
+
+        print("start end ")
+
     def select_frame_by_name(self, name):
         # set button color for selected button
         self.download_button.configure(fg_color=("gray75", "gray25") if name == "download" else "transparent")
@@ -237,7 +224,29 @@ class App(customtkinter.CTk):
         customtkinter.set_appearance_mode(new_appearance_mode)
 
 
+    def async_load_urls(self):
+        print("start ---")
+        time.sleep(5)
+        table = []
+        row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
+        print("start fill table")
+        for r in range(4):
+            for c in range(4):
+                widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="Language Select:",
+                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                      anchor="w")
+                widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
+                row.append(widget)    #把每次创建的Entry对象添加到row列表里
+            table.append(row)       #把row列表添加到table列表里，使table成为一个二维列表。
+        
+        ##加个表头试一下
+        field = ['url','suggest','website', 'suggest']
+        for t in field:
+            table[0][field.index(t)].configure(
+                            textvariable=customtkinter.StringVar(value=t)
+                            )
+
+
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-
