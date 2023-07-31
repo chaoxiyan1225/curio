@@ -80,32 +80,32 @@ logger.debug('this is another debug message')
 
 Python内置了日志模块，在默认情况下输出的日志是不带文件名和函数名的，这样在排查问题时，遇到相似的日志就变得容易混淆，可以通过设置将输出的日志中带有文件名和函数名。参考了stackoverflow的回答，详细代码如下。
 
-import logging
-log = logging.getLogger('root')
-LOG_FORMAT = "%(filename)s:%(lineno)s %(funcName)s() %(message)s"
-logging.basicConfig(format=LOG_FORMAT)
-log.setLevel(logging.DEBUG)
-
-def InitLogger(logFile, logLevel):
-    logger = logging.getLogger()
-    fileHandler = logging.FileHandler(logFile)
-    formatter = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s]  %(message)s", "%Y-%m-%d %H:%M:%S"
-    )
-    fileHandler.setFormatter(formatter)
-    logger.addHandler(fileHandler)
-    logger.setLevel(logLevel)
-    return logger
-
-
-logger = InitLogger(
-    "nsmu_%s_%s_%s.log"
-    % (
-        datetime.datetime.now().year,
-        datetime.datetime.now().month,
-        datetime.datetime.now().day,
-    ),
-    logging.INFO,
-)
-
+import logging      
+log = logging.getLogger('root')     
+LOG_FORMAT = "%(filename)s:%(lineno)s %(funcName)s() %(message)s"    
+logging.basicConfig(format=LOG_FORMAT)       
+log.setLevel(logging.DEBUG)       
+        
+def InitLogger(logFile, logLevel):    
+    logger = logging.getLogger()      
+    fileHandler = logging.FileHandler(logFile)        
+    formatter = logging.Formatter(        
+        "[%(asctime)s] [%(levelname)s]  %(message)s", "%Y-%m-%d %H:%M:%S"           
+    )           
+    fileHandler.setFormatter(formatter)        
+    logger.addHandler(fileHandler)         
+    logger.setLevel(logLevel)        
+    return logger       
+        
+        
+logger = InitLogger(       
+    "nsmu_%s_%s_%s.log"         
+    % (        
+        datetime.datetime.now().year,          
+        datetime.datetime.now().month,           
+        datetime.datetime.now().day,          
+    ),          
+    logging.INFO,      
+)        
+        
 
