@@ -76,3 +76,13 @@ logger.debug('this is another debug message')
 
 控制台输出如下：
 
+# 自带 logging
+
+Python内置了日志模块，在默认情况下输出的日志是不带文件名和函数名的，这样在排查问题时，遇到相似的日志就变得容易混淆，可以通过设置将输出的日志中带有文件名和函数名。参考了stackoverflow的回答，详细代码如下。
+
+import logging
+log = logging.getLogger('root')
+LOG_FORMAT = "%(filename)s:%(lineno)s %(funcName)s() %(message)s"
+logging.basicConfig(format=LOG_FORMAT)
+log.setLevel(logging.DEBUG)
+
