@@ -13,6 +13,7 @@ from service.usercontrol import *
 from service.vediodownloadprocesser import *
 from conf.pictures import *
 from tkinter import filedialog
+import logging
 
 
 import conf.errors as Errors
@@ -396,12 +397,14 @@ class App(customtkinter.CTk):
            logger.error(f"the input url:{url} download fail, and error msg: {str(e1)}")
            messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
            self.is_need_stop = True
+           logging.exception(e1)
            
            return
         except Exception as ex:
            logger.error(f"the input url:{url} download error, and error msg: {str(ex)}")         
            messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
            self.is_need_stop = True
+           logging.exception(ex)
            return
         
     def inside_thread(self):
