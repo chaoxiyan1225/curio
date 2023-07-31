@@ -86,3 +86,26 @@ LOG_FORMAT = "%(filename)s:%(lineno)s %(funcName)s() %(message)s"
 logging.basicConfig(format=LOG_FORMAT)
 log.setLevel(logging.DEBUG)
 
+def InitLogger(logFile, logLevel):
+    logger = logging.getLogger()
+    fileHandler = logging.FileHandler(logFile)
+    formatter = logging.Formatter(
+        "[%(asctime)s] [%(levelname)s]  %(message)s", "%Y-%m-%d %H:%M:%S"
+    )
+    fileHandler.setFormatter(formatter)
+    logger.addHandler(fileHandler)
+    logger.setLevel(logLevel)
+    return logger
+
+
+logger = InitLogger(
+    "nsmu_%s_%s_%s.log"
+    % (
+        datetime.datetime.now().year,
+        datetime.datetime.now().month,
+        datetime.datetime.now().day,
+    ),
+    logging.INFO,
+)
+
+
