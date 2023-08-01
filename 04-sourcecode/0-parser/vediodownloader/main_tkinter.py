@@ -20,6 +20,7 @@ import conf.errors as Errors
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
+PROGRESS_INFO = "【下载信息汇总】当前共有视频:TT个,下载成功:SS个,失败:FF,流程是否终止:YY"
 
 class App(customtkinter.CTk):
 
@@ -40,6 +41,8 @@ class App(customtkinter.CTk):
         self.register_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "register.png")),dark_image=Image.open(os.path.join(image_path, "register.png")), size=(PIC_SIZE, PIC_SIZE))
         self.confirm_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "confirm.png")),dark_image=Image.open(os.path.join(image_path, "confirm.png")), size=(PIC_SIZE, PIC_SIZE))                                         
         self.back_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "back.png")),dark_image=Image.open(os.path.join(image_path, "back.png")), size=(PIC_SIZE, PIC_SIZE))
+        self.bg1_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg-1.png")),dark_image=Image.open(os.path.join(image_path, "bg-1.png")), size=(712,  322))
+        self.bg2_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg-2.png")),dark_image=Image.open(os.path.join(image_path, "bg-2.png")), size=(712,  322))
                                              
     def __init__(self):
         super().__init__()
@@ -61,36 +64,19 @@ class App(customtkinter.CTk):
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(6, weight=1)
 
-        self.navigation_frame_label = customtkinter.CTkLabel(self.navigation_frame, text=" BestVedioDownloader", image=self.                                                     logo_image,  compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.navigation_frame_label = customtkinter.CTkLabel(self.navigation_frame, text=" BestVedioDownloader", image=self.logo_image,  compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.navigation_frame_label.grid(row=0, column=0, padx=20, pady=20)
-
-        self.download_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="DownLoad",
-                                                   fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                   image=self.download_img, anchor="w", command=self.download_button_event)
+        self.download_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="DownLoad", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.download_img, anchor="w", command=self.download_button_event)
         self.download_button.grid(row=1, column=0, sticky="ew")
-
-        self.shares_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Shares",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      image=self.shares_img, anchor="w", command=self.shares_button_event)
+        self.shares_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Shares", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.shares_button_event)
         self.shares_button.grid(row=2, column=0, sticky="ew")
-
-        self.register_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Register",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      image=self.register_img, anchor="w", command=self.register_button_event)
+        self.register_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Register", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.register_img, anchor="w", command=self.register_button_event)
         self.register_button.grid(row=3, column=0, sticky="ew")
-
-        self.aboutus_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="AboutUs",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      image=self.aboutus_img, anchor="w", command=self.aboutus_button_event)
+        self.aboutus_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="AboutUs", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.aboutus_img, anchor="w", command=self.aboutus_button_event)
         self.aboutus_button.grid(row=4, column=0, sticky="ew")
-
-        self.language_label =  customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=30, border_spacing=10, text="Language Select:",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      anchor="w")
+        self.language_label =  customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=30, border_spacing=10, text="Language Select:", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), anchor="w")
         self.language_label.grid(row=7, column=0, padx=20, pady=(10, 0) )
-
-        self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame,  values=["中文", "English", "Spnish"], 
-                                                                       command=self.change_language_event)
+        self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame,  values=["中文", "English", "Spnish"], command=self.change_language_event)
         self.language_optionemenu.grid(row=8, column=0, padx=(0,20), pady=(0, 10))
 
         # create download frame
@@ -98,29 +84,33 @@ class App(customtkinter.CTk):
         self.download_frame.grid(row=10, column=13,  sticky="nsew")
         self.download_frame.grid_rowconfigure((1), weight=1)
         #self.download_frame.grid_columnconfigure((0,10), weight=1)
+        #self.info_label =  customtkinter.CTkButton(self.download_frame, corner_radius=0, height=30, border_spacing=10, text="请粘贴视频网址:",
+        #                                              fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+        #                                              anchor="w")
+        self.info_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=20,  text="请粘贴视频网址:",
+                                                      fg_color="transparent", text_color=("gray10", "gray90"),
+                                                      anchor="w")
+        self.info_label.grid(row=0, column=0, padx=(0,10), pady=(10, 0) )
        
-        self.url_entry = customtkinter.CTkEntry(self.download_frame, width = 400, placeholder_text="请输入网址")
-        self.url_entry.grid(row=0, column=0, padx=(10,10), columnspan=12, pady=(10, 0),sticky="ew")
-        
-        self.name_entry = customtkinter.CTkEntry(self.download_frame, width = 80, placeholder_text="保存影片名")
-        self.name_entry.grid(row=0, column=12, padx=(0,0), pady=(10,0), sticky="ew")
-        
-        self.save_button = customtkinter.CTkButton(self.download_frame, text="选择保存路径", command=self.select_path)
-        
-        self.save_button.grid(row=1, column=0, padx=(10,10), columnspan=1, pady=(0,0), sticky="ew")
-        
-        
-        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 400,  placeholder_text="已经选择路径")
-        self.save_entry.grid(row=1, column=1, padx=(10,10), columnspan=11, pady=(0,0), sticky="ew")
-        
-        self.start_down_button = customtkinter.CTkButton(self.download_frame, text="download", command=self.start_downLoad, image=self.search_img)
-        self.start_down_button.grid(row=1, column=12, columnspan=1, padx=(0,0), pady=(0,0), sticky="ew")
-        
-        self.image_label = customtkinter.CTkLabel(self.download_frame, text="", image=self.image_icon_light)
-        self.image_label.grid(row=2, column=0, padx=(0,0), pady=10, columnspan = 13, sticky="ew")
+        self.url_entry = customtkinter.CTkEntry(self.download_frame, width = 400, placeholder_text="请粘贴视频网址")
+        self.url_entry.grid(row=1, column=0, padx=(10,10), columnspan=12, pady=(0, 0),sticky="ew")
 
+        self.start_down_button = customtkinter.CTkButton(self.download_frame, text="download", command=self.start_downLoad)
+        self.start_down_button.grid(row=1, column=12, columnspan=1, padx=(0,0), pady=(0,0), sticky="ew")
+    
+        self.save_button = customtkinter.CTkButton(self.download_frame, text="选择保存路径", command=self.select_path)
+        self.save_button.grid(row=2, column=0, padx=(10,10), columnspan=1, pady=(0,0), sticky="ew")
+        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 400,  placeholder_text="已经选择路径")
+        self.save_entry.grid(row=2, column=1, padx=(10,10), columnspan=11, pady=(0,0), sticky="ew")
+        self.name_entry = customtkinter.CTkEntry(self.download_frame, width = 80, placeholder_text="输入影片名")
+        self.name_entry.grid(row=2, column=12, padx=(0,0), pady=(0,0), sticky="ew")
+        self.image_label = customtkinter.CTkLabel(self.download_frame, text="", image=self.bg2_img)
+        self.image_label.grid(row=3, column=0, padx=(0,0), pady=10, columnspan = 13, sticky="ew")
+
+        self.progress_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=20,  text=f"{PROGRESS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
+        self.progress_label.grid(row=8, column=0, columnspan=2, padx=(0,10), pady=(20, 0) )
         self.progressbar = customtkinter.CTkProgressBar(self.download_frame)
-        self.progressbar.grid(row=9, column=0, columnspan=12, padx=(10,0), pady=20, sticky="nsew")
+        self.progressbar.grid(row=9, column=0, columnspan=12, padx=(10,0), pady=(20,20), sticky="nsew")
         self.progressbar.set(0.01)
 
         self.buttonOpen = customtkinter.CTkButton(self.download_frame, text="Open", image=self.more_img, command=self.open_path)
@@ -131,35 +121,23 @@ class App(customtkinter.CTk):
         self.shares_frame.grid_columnconfigure((1), weight=1)
         self.shares_frame.grid_rowconfigure((1), weight=0)
 
-
         # create register frame
         self.register_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.register_frame.grid_columnconfigure((1), weight=1)
         self.register_frame.grid_rowconfigure((1), weight=0)
 
-
-        self.tel_label = customtkinter.CTkLabel(self.register_frame, text="TelNum:", 
-                                                             compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.tel_label = customtkinter.CTkLabel(self.register_frame, text="TelNum:", compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.tel_label.grid(row=0, column=0, padx=(10,0), pady=(20,10))
         self.tel_entry = customtkinter.CTkEntry(self.register_frame, width = 50, placeholder_text="please input telNum")
         self.tel_entry.grid(row=0, column=1, columnspan=2,sticky="nsew", padx=(5,5), pady=(20,10))
-        
-        self.tel_info_label = customtkinter.CTkLabel(self.register_frame, text="* You must give me your tel exactly",
-                                                compound="left", font=customtkinter.CTkFont(size=15))
+        self.tel_info_label = customtkinter.CTkLabel(self.register_frame, text="* You must give me your tel exactly", compound="left", font=customtkinter.CTkFont(size=15))
         self.tel_info_label.grid(row=0, column=3, padx=(0,20), pady=(20,10))
-
-
-        self.email_label = customtkinter.CTkLabel(self.register_frame, text="Email:", 
-                                                             compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.email_label = customtkinter.CTkLabel(self.register_frame, text="Email:", compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.email_label.grid(row=1, column=0, padx=(10,0), pady=10)
         self.email_entry = customtkinter.CTkEntry(self.register_frame, width =50, placeholder_text="please input email")
         self.email_entry.grid(row=1, column=1, columnspan=2,sticky="nsew", padx=(0,5), pady=10)
-
-        self.email_info_label = customtkinter.CTkLabel(self.register_frame, text="* You must give me your Email exactly",
-                                                compound="left", font=customtkinter.CTkFont(size=15))
+        self.email_info_label = customtkinter.CTkLabel(self.register_frame, text="* You must give me your Email exactly", compound="left", font=customtkinter.CTkFont(size=15))
         self.email_info_label.grid(row=1, column=3, padx=(0,20), pady=10)
-
-
         self.submit_button = customtkinter.CTkButton(self.register_frame, text="submit", command=None, image=self.confirm_img)
         self.submit_button.grid(row=2, column=1, columnspan=1, padx=(0,0), pady=20)
 
@@ -167,7 +145,6 @@ class App(customtkinter.CTk):
         self.register_box = customtkinter.CTkTextbox(self.register_frame, width=280)
         self.register_box.grid(row=3, column=0, columnspan=10, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.register_box.insert("0.0", "NOTES!!!\n\n" + "You need to register, if you want to use this software  unt ut labore et dolore magna aliquyam erat, sed diam voluptua.\n\n" * 10)
-
 
         # create about us frame
         self.aboutus_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
@@ -284,7 +261,7 @@ class App(customtkinter.CTk):
         return True
 
 
-    def sendMsg4Register(self):
+    def send_msg_register(self):
 
         isValid = self.check_register_valid()
         if isValid == False:
@@ -293,17 +270,16 @@ class App(customtkinter.CTk):
         #text, ok = QInputDialog.getText(self, '用户注册提示界面', '输入邮箱')
         isSend = self.userCtrl.clickToRegister(self.email.text(), self.tel.text())
         if isSend == Errors.SUCCESS:
-           messagebox.showinfo(self, "成功提示", "您的注册申请{成功}注意查收邮件", QMessageBox.StandardButton.Yes) 
+           messagebox.showinfo(self, "成功提示", "您的注册申请{成功}注意查收邮件") 
            return True
 
-        messagebox.showinfo(self, "错误提示", "您的注册申请{失败}请稍后重试", QMessageBox.StandardButton.Yes) 
+        messagebox.showinfo(self, "错误提示", "您的注册申请{失败}请稍后重试") 
         return False
 
-    def Check_login_valid(self):
+    def check_login_valid(self):
         
-        if self.LoginValid == True and (timer.time() - self.lastValidTime)  < self.validPeriod:
+        if self.LoginValid == True and (threading.Timer.time() - self.lastValidTime)  < self.validPeriod:
             return True
-            
             
         result = self.sysCtrl.clientValid()
         logger.warn(f'the client valid check {result.toString()}')
@@ -347,8 +323,8 @@ class App(customtkinter.CTk):
         self.save_entry.insert(0,filePath)
 
     def start_downLoad(self):
-        url = self.url_entry.get()        
-        isValid = UserUITool.IsValidUrl(url)
+        urlInput = self.url_entry.get()        
+        isValid = UserUITool.IsValidUrl(urlInput)
 
         if isValid == False:
            self.url_entry.configure(fg_color="red")
@@ -383,49 +359,46 @@ class App(customtkinter.CTk):
            messagebox.showinfo(title="严重", message="您选择的路径不存在！") 
            return 
         
-        logger.warn(f'后台线程去执行下载')
+        logger.warn(f'excute the downloader backgroud!')
+        
+        self.is_need_stop = False
         self.downloadP = VedioDownLoadProcesser()
-        t = threading.Thread(target=self.downLoading, args=(url, savePath, name))
-        t.start()
+
+        t = threading.Thread(target=self.downLoading, args=(urlInput, savePath, name))
         t2 = threading.Thread(target=self.inside_thread)
         t2.start()
-        
+        t.start()
             
-    def downLoading(self, url, savePath, name):
+    def downLoading(self, urlInput, savePath, name):
     
         try:
-           self.downloadP.downLoad_start(url, savePath, name)
-        except  BaseException as e1:
-           logger.error(f"the input url:{url} download fail, and error msg: {str(e1)}")
-           messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
-           self.is_need_stop = True
-           logging.exception(e1)
-           
-           return
-        except Exception as ex:
-           logger.error(f"the input url:{url} download error, and error msg: {str(ex)}")         
-           messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
-           self.is_need_stop = True
-           logging.exception(ex)
-           return
+            self.downloadP.downLoad_start(urlInput, savePath, name)
+        except BaseException as e1:
+            logger.error(f"the input url:{urlInput} download fail, and error msg: {str(e1)}")
+            messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
+            #self.is_need_stop = True
+            logging.exception(e1)
         
     def inside_thread(self):
-        percent = 1
-        while not self.is_need_stop and percent <= 100:
-            percent = 1 if self.downloadP.getPercent() == 0 else self.downloadP.getPercent()
-            self.setPercentV()
+        while not self.is_need_stop:
+            metricInfo = self.downloadP.get_metric()
+            if metricInfo.successVedioCnt + metricInfo.failVedioCnt >= metricInfo.totalVedioCnt:
+               self.set_frame_view(metricInfo)
+               self.is_need_stop = True
+               break
+               
             time.sleep(5)
                     
-    def setPercentV(self):
-        percent = 1 if self.downloadP.getPercent() == 0 else self.downloadP.getPercent()
-        logger.warn(f'当前进度{percent}')
-        if  percent >= 0:
-            #self.percent.setText(f'{percent}/100')
-            self.progressbar.set(percent/100)
-            #self.timer.stop()
-        if percent == 100:
-           self.is_need_stop = True
-            
+    def set_frame_view(self, metricInfo):
+        percent = 1 if metricInfo.percentCurrent == 0 else metricInfo.percentCurrent
+        logger.warn(f'currentProgress:{percent}')
+        self.progressbar.set(percent/100)
+
+        inP = "Yes" if metricInfo.successVedioCnt + metricInfo.failVedioCnt < metricInfo.totalVedioCnt else "No"
+
+        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.successVedioCnt)).replace("FF", inP)
+        self.progress_label.setvar(info)
+       
 if __name__ == "__main__":
     app = App()
     app.mainloop()
