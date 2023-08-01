@@ -2,16 +2,13 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6 import QtCore
-import useruitool as UserUITool
+import utils.useruitool as UserUITool
 import sys, platform, random
-
-from systemcontrol import *
-from usercontrol import *
-from vediodownloadprocesser import *
-from pictures import *
-
-
-import errors as Errors
+from service.systemcontrol import *
+from service.usercontrol import *
+from service.vediodownloadprocesser import *
+from conf.pictures import *
+import conf.errors as Errors
 
 WIDTH = 800
 HEIGHT = 600
@@ -121,7 +118,6 @@ class AdviceUrls(ShenQiWidget):
             layout.addLayout(layout1)
             self.setLayout(layout)
 
-
 class Register(ShenQiWidget):
     def checkValid(self):
         email = self.email.text()        
@@ -142,7 +138,6 @@ class Register(ShenQiWidget):
 
         return True
 
-
     def sendMsg4Register(self):
 
         isValid = self.checkValid()
@@ -158,7 +153,6 @@ class Register(ShenQiWidget):
 
         QMessageBox.question(self, "错误提示", "您的注册申请{失败}请稍后重试", QMessageBox.StandardButton.Yes) 
         return False
-
 
     def initUI(self):
         self.setWindowTitle("当前位于注册界面")
@@ -222,7 +216,6 @@ class Register(ShenQiWidget):
         self.setLayout(layout)
         self.register_button.clicked.connect(self.sendMsg4Register)
 
-
 class BuyNow(ShenQiWidget):
 
     def initUI(self):
@@ -235,12 +228,10 @@ class BuyNow(ShenQiWidget):
         p1 = QPalette()
         p1.setColor(QPalette.ColorRole.WindowText, QColor('red'))
 
-
         font2 = QFont()
         font2.setPointSize(16) 
         p2 = QPalette()
         p2.setColor(QPalette.ColorRole.WindowText, QColor('blue'))
-
 
         l1 = QLabel("撸片神器使用须知:")
         l1.setFont(font1)
@@ -281,8 +272,6 @@ class BuyNow(ShenQiWidget):
         #layout.addWidget(zfb)
         self.setLayout(layout)
 
-
-
 class Download(ShenQiWidget):
     progressChanged = QtCore.pyqtSignal(int)
 
@@ -290,8 +279,7 @@ class Download(ShenQiWidget):
         
         if self.LoginValid == True and (timer.time() - self.lastValidTime)  < self.validPeriod:
             return True
-            
-            
+               
         result = self.sysCtrl.clientValid()
         logger.warn(f'the client valid check {result.toString()}')
         if result == Errors.S_Forbidden:
@@ -333,8 +321,7 @@ class Download(ShenQiWidget):
         self.LoginValid = True
         self.lastValidTime = time.time()
         return True
-
-
+         
     def startDownLoad(self):
         url = self.file_url.text()        
         isValid = UserUITool.IsValidUrl(url)
@@ -420,9 +407,6 @@ class Download(ShenQiWidget):
         self.speedLine = QLineEdit(result)
         self.speedLine.setStyleSheet("QLineEdit{background-color:rgba(100,100,100,100); border:0px;}")
  
- 
-     
-
         pe = QPalette()
         pe.setColor(QPalette.ColorRole.WindowText,QColor("green"))#设置字体颜色
         self.file_label.setAutoFillBackground(True)#设置背景充满，为设置背景颜色的必要条件
@@ -506,7 +490,6 @@ class MainWindow(QMainWindow):
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
         tabs.setMovable(False)
-        
         
         stock = base64.b64decode(stock_png)
         fund = base64.b64decode(fund_png)
