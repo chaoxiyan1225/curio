@@ -39,6 +39,9 @@ class App(customtkinter.CTk):
         self.confirm_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "confirm.png")),dark_image=Image.open(os.path.join(image_path, "confirm.png")), size=(PIC_SIZE, PIC_SIZE))                                         
         self.back_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "back.png")),dark_image=Image.open(os.path.join(image_path, "back.png")), size=(PIC_SIZE, PIC_SIZE))
         self.open_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "open.png")),dark_image=Image.open(os.path.join(image_path, "open.png")), size=(PIC_SIZE, PIC_SIZE))
+        self.add_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "add.png")),dark_image=Image.open(os.path.join(image_path, "add.png")), size=(PIC_SIZE, PIC_SIZE))
+        self.cha_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "cha.png")),dark_image=Image.open(os.path.join(image_path, "cha.png")), size=(PIC_SIZE, PIC_SIZE))
+
         self.bg1_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg1.png")),dark_image=Image.open(os.path.join(image_path, "bg1.png")), size=(712,  322))
         self.bg2_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg2.png")),dark_image=Image.open(os.path.join(image_path, "bg2.png")), size=(712,  322))                                    
                                              
@@ -78,34 +81,40 @@ class App(customtkinter.CTk):
         
         self.language_optionemenu.grid(row=8, column=0, padx=(0,20), pady=(0, 10))
 
-        # create download frame
+        # download frame
         self.download_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
-        self.download_frame.grid(row=15, column=13,  sticky="nsew")
-        self.download_frame.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12), weight=1)
+        #self.download_frame.grid(row=0, column=1,  sticky="nsew")
+        self.download_frame.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), weight=1)
         self.download_frame.grid_rowconfigure((0,1,2,3,4,5,6,7,8,9), weight=1)
 
         self.info_label =  customtkinter.CTkLabel(self.download_frame,corner_radius=0, height=15,  text="请粘贴视频网址:",
                                                        fg_color="transparent", text_color=("gray10", "gray90"),
                                                       anchor="w")
-        self.info_label.grid(row=0, column=0, padx=(0,0), pady=(0,0))
+        self.info_label.grid(row=1, column=0, padx=(20,0), pady=(0,0))
+        
+        
+        self.add_button =  customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15,text="", fg_color="transparent",hover_color=("gray70", "gray30"), image=self.add_img, command=None)
+        self.add_button.grid(row=2, column=0,padx=(10,0), columnspan=1, pady=(0, 0),sticky="ew")
+        
         self.url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="请粘贴视频网址")
-        self.url_entry.grid(row=0, column=1, padx=(10,10), columnspan=11, pady=(0, 0),sticky="ew")
+        self.url_entry.grid(row=2, column=1, padx=(10,10), columnspan=13, pady=(0, 0),sticky="ew")
 
         self.start_down_button = customtkinter.CTkButton(self.download_frame, text="download", command=self.start_downLoad)
-        self.start_down_button.grid(row=0, column=12, columnspan=1, padx=(0,0), pady=(0,0), sticky="ew")
+        self.start_down_button.grid(row=2, column=15, columnspan=1, padx=(0,20), pady=(0,0), sticky="ew")
         # self.image_label = customtkinter.CTkLabel(self.download_frame, text="", image=self.bg2_img)
         # self.image_label.grid(row=2, column=0, padx=(0,0), pady=0, columnspan = 13, sticky="ew")
        
-        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 400,  placeholder_text="请选择路径")
-        self.save_entry.grid(row=11, column=0, padx=(10,10), columnspan=12, pady=0, sticky="ew")
-        self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.open_path)
+        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="请选择路径")
+        self.save_entry.grid(row=11, column=0, padx=(10,0), columnspan=15, pady=0, sticky="ew")
+        
+        self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=20, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.open_path)
         #self.buttonOpen = customtkinter.CTkButton(self.download_frame, image=self.open_img, command=self.open_path, text=" ")
-        self.buttonOpen.grid(row=11, column=12, columnspan=1, padx=(0,0), pady=0)
+        self.buttonOpen.grid(row=11, column=15, columnspan=1, padx=(0,0), pady=0)
 
         self.progress_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"{PROGRESS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
         self.progress_label.grid(row=12, column=0, columnspan=2, padx=(0,10), pady=(0, 0) )
         self.progressbar = customtkinter.CTkProgressBar(self.download_frame, height= 30)
-        self.progressbar.grid(row=13, column=0, columnspan=13, padx=(10,10), pady=(0, 10), sticky="nsew")
+        self.progressbar.grid(row=13, column=0, columnspan=16, padx=(10,10), pady=(0, 10), sticky="nsew")
         self.progressbar.set(0.01)
 
         # create shares frame
