@@ -32,6 +32,9 @@ class MetricInfo(object):
          self.successVedioCnt = successVedioCnt
          self.percentCurrent = percentCurrent
          self.failVedioCnt = 0 
+         
+    def  to_string(self):
+        return f"totalVedioCnt:{self.totalVedioCnt}, successVedioCnt:{self.successVedioCnt}, percentCurrent:{self.percentCurrent}, failVedioCnt:{self.failVedioCnt}"
 '''
    该类用来处理TS格式的视频文件下载
    支持多线程模式
@@ -426,7 +429,12 @@ class  VedioDownLoadProcesser:
 
     def parse_all_vedios(self, urlInput):
         urls = urlInput.split("\n") if "\n" in urlInput else  urlInput.split(" ")
-        for url in urls:
+        for u in urls:
+            url = u.strip()
+            
+            if url == None or url == "" or "http" not in url:
+               continue
+            
             if '.m3u8' in url:
                 logger.warn(f'原始URL只含一个视频文件{url}')
                 self.m3u8Ulrs.add(url)
@@ -440,8 +448,11 @@ class  VedioDownLoadProcesser:
                     logger.warn(f'url{url},无法解析出 m3u8链接或者mp4链接')
                     return
                 
-                self.m3u8Ulrs.add(m3u8Tmps)
-                self.mp4Urls.add(mp4Tmps)
+                for url in m3u8Tmps:
+                    self.m3u8Ulrs.add(url)
+                    
+                for url in mp4Tmps:
+                    self.mp4Urls.add(url)
 
     def downLoad_start(self, urlInput, savePath, mp4Name = None):
         self.init(savePath)
@@ -456,23 +467,28 @@ class  VedioDownLoadProcesser:
            
         logger.warn(f'the url:{urlInput},共含m3u8文件{len(self.m3u8Ulrs)}, mp4的文件个数{len(self.mp4Urls)}')
         
+        count = 0
         for m3u8Url in self.m3u8Ulrs:
             self.downSuccess = 0
             self.downTotal = 0
-            self.ts_download_1By1(m3u8Url, f'{mp4Name}_{self.successVedioCnt + 1}')
-            self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
-           
+            count = count + 1
+            self.ts_download_1By1(m3u8Url, f'{mp4Name}_{count}')
+            
             if self.downSuccess != self.downTotal:
                self.metricInfo.failVedioCnt = self.metricInfo.failVedioCnt + 1 
+            else:
+               self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
 
         for mp4Url in self.mp4Urls:
             self.downSuccess = 0 
             self.downTotal = 0
-            self.mp4_download_1By1(mp4Url, f'{mp4Name}_{self.successVedioCnt + 1}')   
-            self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
+            count = count + 1
+            self.mp4_download_1By1(mp4Url, f'{mp4Name}_{count}')   
 
             if self.downSuccess != self.downTotal:
                self.metricInfo.failVedioCnt = self.metricInfo.failVedioCnt + 1
+            else:
+               self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
 
 if __name__ == '__main__': 
 
