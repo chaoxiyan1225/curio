@@ -41,8 +41,8 @@ class App(customtkinter.CTk):
         self.register_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "register.png")),dark_image=Image.open(os.path.join(image_path, "register.png")), size=(PIC_SIZE, PIC_SIZE))
         self.confirm_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "confirm.png")),dark_image=Image.open(os.path.join(image_path, "confirm.png")), size=(PIC_SIZE, PIC_SIZE))                                         
         self.back_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "back.png")),dark_image=Image.open(os.path.join(image_path, "back.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.bg1_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg-1.png")),dark_image=Image.open(os.path.join(image_path, "bg-1.png")), size=(712,  322))
-        self.bg2_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg-2.png")),dark_image=Image.open(os.path.join(image_path, "bg-2.png")), size=(712,  322))
+        self.bg1_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg1.png")),dark_image=Image.open(os.path.join(image_path, "bg1.png")), size=(712,  322))
+        self.bg2_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg2.png")),dark_image=Image.open(os.path.join(image_path, "bg2.png")), size=(712,  322))
                                              
     def __init__(self):
         super().__init__()
@@ -76,7 +76,8 @@ class App(customtkinter.CTk):
         self.aboutus_button.grid(row=4, column=0, sticky="ew")
         self.language_label =  customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=30, border_spacing=10, text="Language Select:", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), anchor="w")
         self.language_label.grid(row=7, column=0, padx=20, pady=(10, 0) )
-        self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame,  values=["中文", "English", "Spnish"], command=self.change_language_event)
+        self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame, values=["中文", "English", "Spnish"], command=self.change_language_event)
+        
         self.language_optionemenu.grid(row=8, column=0, padx=(0,20), pady=(0, 10))
 
         # create download frame
@@ -106,6 +107,7 @@ class App(customtkinter.CTk):
         self.name_entry.grid(row=2, column=12, padx=(0,0), pady=(0,0), sticky="ew")
         self.image_label = customtkinter.CTkLabel(self.download_frame, text="", image=self.bg2_img)
         self.image_label.grid(row=3, column=0, padx=(0,0), pady=10, columnspan = 13, sticky="ew")
+       
 
         self.progress_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=20,  text=f"{PROGRESS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
         self.progress_label.grid(row=8, column=0, columnspan=2, padx=(0,10), pady=(20, 0) )
@@ -380,10 +382,12 @@ class App(customtkinter.CTk):
             logging.exception(e1)
         
     def inside_thread(self):
-        while not self.is_need_stop:
+        while True:
             metricInfo = self.downloadP.get_metric()
-            if metricInfo.successVedioCnt + metricInfo.failVedioCnt >= metricInfo.totalVedioCnt:
-               self.set_frame_view(metricInfo)
+            self.set_frame_view(metricInfo)
+            
+            if metricInfo.totalVedioCnt > 0 and metricInfo.successVedioCnt + metricInfo.failVedioCnt >= metricInfo.totalVedioCnt:
+               logger.warn(f"have  down load finish, {metricInfo.to_string()}")
                self.is_need_stop = True
                break
                
@@ -393,11 +397,15 @@ class App(customtkinter.CTk):
         percent = 1 if metricInfo.percentCurrent == 0 else metricInfo.percentCurrent
         logger.warn(f'currentProgress:{percent}')
         self.progressbar.set(percent/100)
+        
+        inP = "Yes"
+        if metricInfo.totalVedioCnt == 0:
+           inP = "Yes"
+        else:
+           inP = "Yes" if metricInfo.successVedioCnt + metricInfo.failVedioCnt < metricInfo.totalVedioCnt else "No"
 
-        inP = "Yes" if metricInfo.successVedioCnt + metricInfo.failVedioCnt < metricInfo.totalVedioCnt else "No"
-
-        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.successVedioCnt)).replace("FF", inP)
-        self.progress_label.setvar(info)
+        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.successVedioCnt)).replace("FF", metricInfo.failVedioCnt).replace("YY", inP)
+        self.progress_label.configure(text=info)
        
 if __name__ == "__main__":
     app = App()
