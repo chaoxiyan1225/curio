@@ -109,7 +109,7 @@ class App(customtkinter.CTk):
         self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="请选择路径")
         self.save_entry.grid(row=11, column=0, padx=(10,0), columnspan=15, pady=0, sticky="ew")
         
-        self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.open_path)
+        self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.select_path)
         #self.buttonOpen = customtkinter.CTkButton(self.download_frame, image=self.open_img, command=self.open_path, text=" ")
         self.buttonOpen.grid(row=11, column=15, columnspan=1, padx=(0,0), pady=0)
 
@@ -226,11 +226,12 @@ class App(customtkinter.CTk):
         
     def add_new(self):
         self.current_row = self.current_row + 1
-        
+ 
         if self.current_row > 4:
+           self.current_row = self.current_row - 1
            messagebox.showinfo(title="警告", message="只能支持同时下载三个视频链接") 
            return
-        
+           
         url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="请粘贴视频网址")
         url_entry.grid(row=self.current_row, column=1, padx=(10,10), columnspan=13, pady=(0, 0),sticky="ew")
         
@@ -241,15 +242,13 @@ class App(customtkinter.CTk):
     
     def forget_row(self, chaButton):  
         buttonRow = int(chaButton.grid_info()["row"])    
+        self.current_row = self.current_row - 1
+
         for entry in self.download_frame.grid_slaves():
             if int(entry.grid_info()["row"]) == buttonRow:
                 columnN = int(entry.grid_info()["column"])
                 entry.grid_forget()
                 
-                if columnN == 15:
-                    self.current_row = self.current_row - 1
-                    print(f'the current row {self.current_row}')
-               
         for entry in self.download_frame.grid_slaves():       
             currentR = int(entry.grid_info()["row"])
             if currentR > buttonRow and currentR < 11: 
@@ -356,30 +355,36 @@ class App(customtkinter.CTk):
     def select_path(self):
         filePath = filedialog.askdirectory()
         self.save_entry.insert(0,filePath)
+        
+    
+    def parse_allUrls(self):
+       urls = []
+       for entry in self.download_frame.grid_slaves():       
+           currentR = int(entry.grid_info()["row"])
+           if currentR >= 2 and currentR < 11: 
+              if int(entry.grid_info()["column"] == 1):
+                 url = entry.get()
+                 if url != None and url.strip() != "":
+                    urls.append(url)
+       return urls
 
     def start_downLoad(self):
-        urlInput = self.url_entry.get()        
-        isValid = UserUITool.IsValidUrl(urlInput)
-
-        if isValid == False:
-           self.url_entry.configure(fg_color="red")
-           messagebox.showinfo(title="严重", message="输入url不合法！") 
-           self.is_need_stop = True
+        urls = self.parse_allUrls()
+        if len(urls) == 0:
+           messagebox.showinfo(title="严重", message="必须输入一个网址！") 
            return
-        else:
-           self.url_entry.configure(fg_color="white")
+        
+        for url in urls:
+            isValid = UserUITool.IsValidUrl(url)
+            if isValid == False:
+               messagebox.showinfo(title="严重", message="输入url不合法！") 
+               self.is_need_stop = True
+               return
+
 
         #isValid = self.CheckValid()
         #if isValid == False:
-        #   return 
-
-        name = self.name_entry.get()
-        if name == None or name.strip() == '':
-           self.name_entry.configure(fg_color="red")
-           messagebox.showinfo(title="严重", message="保存的视频名不合法！") 
-           return
-        else:
-           self.name_entry.configure(fg_color="white")           
+        #   return        
         
         savePath = self.save_entry.get() 
         if savePath == None or savePath.strip() == '':
@@ -399,17 +404,17 @@ class App(customtkinter.CTk):
         self.is_need_stop = False
         self.downloadP = VedioDownLoadProcesser()
 
-        t = threading.Thread(target=self.downLoading, args=(urlInput, savePath, name))
+        t = threading.Thread(target=self.downLoading, args=(urls, savePath))
         t2 = threading.Thread(target=self.inside_thread)
         t2.start()
         t.start()
             
-    def downLoading(self, urlInput, savePath, name):
+    def downLoading(self, urls, savePath):
     
         try:
-            self.downloadP.downLoad_start(urlInput, savePath, name)
-        except BaseException as e1:
-            logger.error(f"the input url:{urlInput} download fail, and error msg: {str(e1)}")
+            self.downloadP.downLoad_start(urls, savePath)
+        except Exception as e1:
+            logger.error(f"the input url:{urls} download fail, and error msg: {str(e1)}")
             messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
             #self.is_need_stop = True
             logging.exception(e1)
@@ -435,9 +440,9 @@ class App(customtkinter.CTk):
         if metricInfo.totalVedioCnt == 0:
            inP = "Yes"
         else:
-           inP = "Yes" if metricInfo.successVedioCnt + metricInfo.failVedioCnt < metricInfo.totalVedioCnt else "No"
+           inP = "No" if metricInfo.successVedioCnt + metricInfo.failVedioCnt < metricInfo.totalVedioCnt else "Yes"
 
-        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.successVedioCnt)).replace("FF", metricInfo.failVedioCnt).replace("YY", inP)
+        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.successVedioCnt)).replace("FF", str(metricInfo.failVedioCnt)).replace("YY", inP)
         self.progress_label.configure(text=info)
        
 if __name__ == "__main__":

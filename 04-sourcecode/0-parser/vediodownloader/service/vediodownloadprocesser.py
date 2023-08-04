@@ -412,8 +412,6 @@ class  VedioDownLoadProcesser:
                
         mp4f.close()
         ##bar.close()
-        
-        #清除临时的TS文件
         os.chdir(self.download_ts)
         os.system('del /Q *.ts')
         
@@ -423,12 +421,15 @@ class  VedioDownLoadProcesser:
         father = os.path.join(self.download_ts, os.pardir)
         os.chdir(father)
         os.system('del /Q *.m3u8')
+        
+    def clear_file(self):
         #os.rmdir(self.download_ts)
         shutil.rmtree(self.download_ts)
         os.chdir(os.path.join(father, os.pardir))
+       
 
-    def parse_all_vedios(self, urlInput):
-        urls = urlInput.split("\n") if "\n" in urlInput else  urlInput.split(" ")
+    def parse_all_vedios(self, urls):
+        logger.warn(f'the input urls:{urls}')
         for u in urls:
             url = u.strip()
             
@@ -454,18 +455,18 @@ class  VedioDownLoadProcesser:
                 for url in mp4Tmps:
                     self.mp4Urls.add(url)
 
-    def downLoad_start(self, urlInput, savePath, mp4Name = None):
+    def downLoad_start(self, urls, savePath, mp4Name = None):
         self.init(savePath)
         self.downSuccess = 0 # to single vedio
         self.downTotal = 0   # to single vedio
-        self.name = mp4Name
+        self.name = mp4Name if mp4Name != None else "随机名" 
         self.m3u8Ulrs = set()  # total vedios
         self.mp4Urls = set()   # total vedios
         # first parse all vedio url
-        self.parse_all_vedios(urlInput)
+        self.parse_all_vedios(urls)
         self.metricInfo.totalVedioCnt = len(self.m3u8Ulrs) + len(self.mp4Urls)
            
-        logger.warn(f'the url:{urlInput},共含m3u8文件{len(self.m3u8Ulrs)}, mp4的文件个数{len(self.mp4Urls)}')
+        logger.warn(f'the url:{urls},共含m3u8文件{len(self.m3u8Ulrs)}, mp4的文件个数{len(self.mp4Urls)}')
         
         count = 0
         for m3u8Url in self.m3u8Ulrs:
@@ -489,6 +490,8 @@ class  VedioDownLoadProcesser:
                self.metricInfo.failVedioCnt = self.metricInfo.failVedioCnt + 1
             else:
                self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
+               
+        
 
 if __name__ == '__main__': 
 
