@@ -93,7 +93,7 @@ class App(customtkinter.CTk):
         self.info_label.grid(row=1, column=0, padx=(20,0), pady=(0,0))
         
         
-        self.add_button =  customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15,text="", fg_color="transparent",hover_color=("gray70", "gray30"), image=self.add_img, command=None)
+        self.add_button =  customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15,text="", fg_color="transparent",hover_color=("gray70", "gray30"), image=self.add_img, command=self.add_new)
         self.add_button.grid(row=2, column=0,padx=(10,0), columnspan=1, pady=(0, 0),sticky="ew")
         
         self.url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="请粘贴视频网址")
@@ -101,13 +101,15 @@ class App(customtkinter.CTk):
 
         self.start_down_button = customtkinter.CTkButton(self.download_frame, text="download", command=self.start_downLoad)
         self.start_down_button.grid(row=2, column=15, columnspan=1, padx=(0,20), pady=(0,0), sticky="ew")
+        
+        self.current_row = 2
         # self.image_label = customtkinter.CTkLabel(self.download_frame, text="", image=self.bg2_img)
         # self.image_label.grid(row=2, column=0, padx=(0,0), pady=0, columnspan = 13, sticky="ew")
        
         self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="请选择路径")
         self.save_entry.grid(row=11, column=0, padx=(10,0), columnspan=15, pady=0, sticky="ew")
         
-        self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=20, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.open_path)
+        self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.open_path)
         #self.buttonOpen = customtkinter.CTkButton(self.download_frame, image=self.open_img, command=self.open_path, text=" ")
         self.buttonOpen.grid(row=11, column=15, columnspan=1, padx=(0,0), pady=0)
 
@@ -222,6 +224,41 @@ class App(customtkinter.CTk):
         directory = f'{path}'
         os.system("explorer.exe %s" % directory)
         
+    def add_new(self):
+        self.current_row = self.current_row + 1
+        
+        if self.current_row > 4:
+           messagebox.showinfo(title="警告", message="只能支持同时下载三个视频链接") 
+           return
+        
+        url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="请粘贴视频网址")
+        url_entry.grid(row=self.current_row, column=1, padx=(10,10), columnspan=13, pady=(0, 0),sticky="ew")
+        
+        cha_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text=" ",
+                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.cha_img, anchor="w", command=lambda: self.forget_row(cha_button))
+                                                      
+        cha_button.grid(row=self.current_row, column=15, columnspan=1, padx=(0,20), pady=(0,0), sticky="ew")
+    
+    def forget_row(self, chaButton):  
+        buttonRow = int(chaButton.grid_info()["row"])    
+        for entry in self.download_frame.grid_slaves():
+            if int(entry.grid_info()["row"]) == buttonRow:
+                columnN = int(entry.grid_info()["column"])
+                entry.grid_forget()
+                
+                if columnN == 15:
+                    self.current_row = self.current_row - 1
+                    print(f'the current row {self.current_row}')
+               
+        for entry in self.download_frame.grid_slaves():       
+            currentR = int(entry.grid_info()["row"])
+            if currentR > buttonRow and currentR < 11: 
+                if int(entry.grid_info()["column"] == 1):
+                    entry.grid(row=currentR-1, column=1, padx=(10,10), columnspan=13, pady=(0, 0),sticky="ew")  
+                if int(entry.grid_info()["column"] == 15):
+                    entry.grid(row=currentR-1, column=15, columnspan=1, padx=(0,20), pady=(0,0), sticky="ew")
+
+                    
     def async_load_urls(self):
         table = []
         row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
