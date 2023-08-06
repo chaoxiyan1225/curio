@@ -7,6 +7,14 @@ from pytube import YouTube
 from pathlib import Path
 
 
+
+
+class YoutubeDownloader(CommonDownloader):
+
+     def __init__(self, config):
+         super
+
+
 urls = (
         'https://www.youtube.com/watch?v=H0SbnlDsdAc',
         'https://www.youtube.com/watch?v=McVxUs7d7ok',

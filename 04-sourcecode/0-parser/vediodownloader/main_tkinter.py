@@ -7,9 +7,9 @@ import threading
 from tkinter import messagebox
 import utils.useruitool as UserUITool
 import sys, platform, random
-from service.systemcontrol import *
-from service.usercontrol import *
-from service.vediodownloadprocesser import *
+from service.system_control import *
+from service.user_control import *
+from service.downloader_control import *
 from conf.pictures import *
 from tkinter import filedialog
 import utils.logger as logger
@@ -56,6 +56,9 @@ class App(customtkinter.CTk):
         # set grid layout 1x2
         self.grid_rowconfigure((0), weight=1)
         self.grid_columnconfigure(1, weight=1)
+        
+        self.userCtrl = UserContrl()
+        self.sysCtrl = SoftWareContrl()
          
         # init images
         self.__initImg__()
@@ -402,7 +405,7 @@ class App(customtkinter.CTk):
         logger.warn(f'excute the downloader backgroud!')
         
         self.is_need_stop = False
-        self.downloadP = VedioDownLoadProcesser()
+        self.downloadCtrl = DownloadContrl()
 
         t = threading.Thread(target=self.downLoading, args=(urls, savePath))
         t2 = threading.Thread(target=self.inside_thread)
@@ -412,16 +415,17 @@ class App(customtkinter.CTk):
     def downLoading(self, urls, savePath):
     
         try:
-            self.downloadP.downLoad_start(urls, savePath)
+            self.downloadCtrl.downLoad_start(urls, savePath)
         except Exception as e1:
             logger.error(f"the input url:{urls} download fail, and error msg: {str(e1)}")
             messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
             #self.is_need_stop = True
             logging.exception(e1)
+            self.downloadCtrl.clear()
         
     def inside_thread(self):
         while True:
-            metricInfo = self.downloadP.get_metric()
+            metricInfo = self.downloadCtrl.get_metric()
             self.set_frame_view(metricInfo)
             
             if metricInfo.totalVedioCnt > 0 and metricInfo.successVedioCnt + metricInfo.failVedioCnt >= metricInfo.totalVedioCnt:
@@ -429,7 +433,7 @@ class App(customtkinter.CTk):
                self.is_need_stop = True
                break
                
-            time.sleep(5)
+            time.sleep(10)
                     
     def set_frame_view(self, metricInfo):
         percent = 1 if metricInfo.percentCurrent == 0 else metricInfo.percentCurrent

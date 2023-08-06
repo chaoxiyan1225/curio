@@ -169,14 +169,7 @@ class  VedioDownLoadProcesser:
             taskMapNum = index % useThreadCnt
             taskList[taskMapNum][index] = url
             #logger.warn("urlis :"+ url)
-            '''
-            response = requests.head(url)
-            file_size = response.headers.get('Content-Length')
-            if file_size is None:
-               if raise_error is True:
-                   raise ValueError('该文件不支持多线程分段下载！')
-               totalFileSize = totalFileSize +file_size
-            '''
+
         #logger.warn(f'taskList: {taskList}')
             
         return useThreadCnt, len(urlList),taskList
@@ -191,17 +184,6 @@ class  VedioDownLoadProcesser:
         #先把任务分组
         useThreadCnt, totalFileCnt, taskList = self.map_download_task(urlList)
 
-        '''
-        根据文件直链和文件名下载文件
-        Parameters
-        ----------
-        url : 文件直链
-        file_name : 文件名
-        retry_times: 可选的，每次连接失败重试次数
-        Return
-        ------
-        None
-        '''
         @retry(tries=retry_times)
         @multitasking.task
         def start_download(urlsMap) -> None:
@@ -350,21 +332,10 @@ class  VedioDownLoadProcesser:
         else:
             logger.warn("ts文件的URL解析完成")
         
-        #多线程下载TS files
         self.download_tsFiles(allTsFiles, 3)
         
-        #把 TS files 合并为一个mp4文件
         self.merge_ts_2_mp4(mp4Name)
-         
-    
-    def merge_file(self, tsPath):
-        os.chdir(tsPath)
-        cmd = "copy /b * new.tmp"
-        os.system(cmd)
-        os.system('del /Q *.ts')
-        os.system('del /Q *.mp4')
-        os.rename("new.tmp", "new.mp4")
-        
+          
     def merge_ts_2_mp4(self, mp4FileName:str)->None:
 
         '''
@@ -375,15 +346,6 @@ class  VedioDownLoadProcesser:
                 return False  
 
             with open(tsPath, "rb") as tsf:
-                '''
-                while True:
-                    buffer = tsf.read(BLOCK_SIZE)
-                    if not buffer:
-                      break
-                      
-                    mp4f.write(buffer)
-                    mp4f.flush()
-                '''
                 mp4f.write(tsf.read())
                 ##bar.update(1)#更新进度条
                
@@ -422,7 +384,7 @@ class  VedioDownLoadProcesser:
         os.chdir(father)
         os.system('del /Q *.m3u8')
         
-    def clear_file(self):
+    def clear(self):
         #os.rmdir(self.download_ts)
         shutil.rmtree(self.download_ts)
         os.chdir(os.path.join(father, os.pardir))
@@ -462,6 +424,11 @@ class  VedioDownLoadProcesser:
         self.name = mp4Name if mp4Name != None else "随机名" 
         self.m3u8Ulrs = set()  # total vedios
         self.mp4Urls = set()   # total vedios
+        
+        
+        
+        
+        
         # first parse all vedio url
         self.parse_all_vedios(urls)
         self.metricInfo.totalVedioCnt = len(self.m3u8Ulrs) + len(self.mp4Urls)
@@ -491,7 +458,7 @@ class  VedioDownLoadProcesser:
             else:
                self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
                
-        
+        self.clear()
 
 if __name__ == '__main__': 
 
