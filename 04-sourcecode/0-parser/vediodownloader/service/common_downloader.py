@@ -8,9 +8,9 @@ from tqdm import tqdm # 用于显示进度条
 import multitasking, threading # 用于多线程操作
 from retry import retry# 导入 retry 库以方便进行下载出错重试
 from bs4 import BeautifulSoup
+import logging
 
 import utils.logger as logger
-import shutil
 
 signal.signal(signal.SIGINT, multitasking.killall)
 from Crypto.Util.Padding import pad
@@ -20,6 +20,7 @@ from Crypto.Util.Padding import pad
 
 default_thread_cnt = 8
 BLOCK_SIZE = 512 * 1024
+RETRY_TIME = 3
 
 headers={
         'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
@@ -41,24 +42,43 @@ class MetricInfo(object):
 '''
 class  CommonDownloader(object):
 
-    def __init__(self, threadCnt = default_thread_cnt, blockSize = BLOCK_SIZE):
+    def __init__(self, savePath, url, vedioName=None, threadCnt = default_thread_cnt, blockSize = BLOCK_SIZE):
         self.threadCnt = threadCnt
         self.blockSize = blockSize
         self.key = None
         self.downSuccess = 0
         self.downTotal = 0
         self.lock = threading.Lock()
-        self.name = None
-        self.download_path = ""
+        self.vedioName = vedioName
+        self.download_path = savePath
         self.download_ts = ""
+        self.url = url
         self.metricInfo = MetricInfo()
 
-    '''
-      可能子下载器需要自己的init
-    '''
-    def init(self, savePath):
+    def init(self):
         pass
 
+
+    def gen_vedio_name(self):
+        current = 0
+        vedioName = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
+        while current < RETRY_TIME:
+            try: 
+                current = current + 1
+                response = requests.get(self.url, headers=headers)
+                soup = BeautifulSoup(response.text,'html.parser')
+                pagetitle = soup.find("title")
+
+                if not pagetitle: 
+                   vedioName = pagetitle[:40]
+                   return vedioName 
+              
+            except Exception as e:
+                logger.error(f"parse title error, {url} str{e}".encode("utf-8"))
+                logging.exception(e)
+
+        return vedioName
+            
 
     def get_percent_current(self):
         pass
@@ -71,8 +91,7 @@ class  CommonDownloader(object):
     def map_download_task(self, urlList):
         useThreadCnt = len(urlList) if self.threadCnt > len(urlList) else self.threadCnt
         taskList = []
-        totalFileSize = 0
-        
+
         for i in range(useThreadCnt):
             taskList.append({})
             
@@ -86,14 +105,13 @@ class  CommonDownloader(object):
     def parse_subUrls(self, url):
         pass
 
-
-    def clear_file(self):
+    def clear(self):
         pass
 
     def parse_all_vedios(self, urls):
         pass
 
 
-    def downLoad_start(self, urls, savePath, mp4Name = None):
+    def downLoad_start(self):
         pass
     
