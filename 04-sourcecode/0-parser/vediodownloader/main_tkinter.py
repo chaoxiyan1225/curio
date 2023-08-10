@@ -6,7 +6,7 @@ import time
 import threading
 from tkinter import messagebox
 import utils.useruitool as UserUITool
-import sys, platform, random
+import utils.commontool as CommonTool
 from service.system_control import *
 from service.user_control import *
 from service.downloader_control import *
@@ -14,6 +14,8 @@ from conf.pictures import *
 from tkinter import filedialog
 import utils.logger as logger
 import conf.errors as Errors
+from io import BytesIO
+from conf.pictures_v3 import *
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
@@ -25,25 +27,24 @@ class App(customtkinter.CTk):
        # load images with light and dark mode image
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "imgs")
 
-        self.logo_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "logo.png")), size=(26, 26))
-        #self.large_test_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
-        self.image_icon_light = customtkinter.CTkImage(Image.open(os.path.join(image_path, "aboutus.png")), size=(712, 362))
-        self.download_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "download.png")),dark_image=Image.open(os.path.join(image_path, "download.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.shares_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "share.png")),dark_image=Image.open(os.path.join(image_path, "share.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.aboutus_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "aboutus.png")),dark_image=Image.open(os.path.join(image_path, "aboutus.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.search_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "search.png")),dark_image=Image.open(os.path.join(image_path, "search.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.download_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "download.png")),dark_image=Image.open(os.path.join(image_path, "download.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.more_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "more.png")),dark_image=Image.open(os.path.join(image_path, "more.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.language_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "language.png")),dark_image=Image.open(os.path.join(image_path, "language.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.register_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "register.png")),dark_image=Image.open(os.path.join(image_path, "register.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.confirm_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "confirm.png")),dark_image=Image.open(os.path.join(image_path, "confirm.png")), size=(PIC_SIZE, PIC_SIZE))                                         
-        self.back_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "back.png")),dark_image=Image.open(os.path.join(image_path, "back.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.open_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "open.png")),dark_image=Image.open(os.path.join(image_path, "open.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.add_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "add.png")),dark_image=Image.open(os.path.join(image_path, "add.png")), size=(PIC_SIZE, PIC_SIZE))
-        self.cha_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "cha.png")),dark_image=Image.open(os.path.join(image_path, "cha.png")), size=(PIC_SIZE, PIC_SIZE))
+        self.logo_image = customtkinter.CTkImage(Image.open(BytesIO(logo_png)), size=(26, 26))
+        self.image_icon_light = customtkinter.CTkImage(Image.open(BytesIO(aboutus_png)), size=(712, 362))
+        self.download_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(download_png)),dark_image=Image.open(BytesIO(download_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.shares_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(share_png)),dark_image=Image.open(BytesIO(share_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.aboutus_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(aboutus_png)),dark_image=Image.open(BytesIO(aboutus_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.search_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(search_png)),dark_image=Image.open(BytesIO(search_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.download_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(download_png)),dark_image=Image.open(BytesIO(download_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.more_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(more_png)),dark_image=Image.open(BytesIO(more_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.language_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(language_png)),dark_image=Image.open(BytesIO(language_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.register_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(register_png)),dark_image=Image.open(BytesIO(register_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.confirm_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(confirm_png)),dark_image=Image.open(BytesIO(confirm_png)), size=(PIC_SIZE, PIC_SIZE))                                         
+        self.back_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(back_png)),dark_image=Image.open(BytesIO(back_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.open_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(open_png)),dark_image=Image.open(BytesIO(open_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.add_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(add_png)),dark_image=Image.open(BytesIO(add_png)), size=(PIC_SIZE, PIC_SIZE))
+        self.cha_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(cha_png)),dark_image=Image.open(BytesIO(cha_png)), size=(PIC_SIZE, PIC_SIZE))
 
-        self.bg1_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg1.png")),dark_image=Image.open(os.path.join(image_path, "bg1.png")), size=(712,  322))
-        self.bg2_img = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "bg2.png")),dark_image=Image.open(os.path.join(image_path, "bg2.png")), size=(712,  322))                                    
+        self.bg1_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(bg1_png)),dark_image=Image.open(BytesIO(bg1_png)), size=(712,  322))
+        self.bg2_img = customtkinter.CTkImage(light_image=Image.open(BytesIO(bg2_png)),dark_image=Image.open(BytesIO(bg2_png)), size=(712,  322))                                    
                                              
     def __init__(self):
         super().__init__()
@@ -384,7 +385,6 @@ class App(customtkinter.CTk):
                self.is_need_stop = True
                return
 
-
         #isValid = self.CheckValid()
         #if isValid == False:
         #   return        
@@ -405,7 +405,7 @@ class App(customtkinter.CTk):
         logger.warn(f'excute the downloader backgroud!')
         
         self.is_need_stop = False
-        self.downloadCtrl = DownloadContrl()
+        self.downloadCtrl = DownloadControl()
 
         t = threading.Thread(target=self.downLoading, args=(urls, savePath))
         t2 = threading.Thread(target=self.inside_thread)
@@ -425,10 +425,10 @@ class App(customtkinter.CTk):
         
     def inside_thread(self):
         while True:
-            metricInfo = self.downloadCtrl.get_metric()
+            metricInfo = self.downloadCtrl.get_total_metrics()
             self.set_frame_view(metricInfo)
-            
-            if metricInfo.totalVedioCnt > 0 and metricInfo.successVedioCnt + metricInfo.failVedioCnt >= metricInfo.totalVedioCnt:
+
+            if metricInfo.totalVedioCnt > 0 and metricInfo.totalFailCnt + metricInfo.totalSuccessCnt >= metricInfo.totalVedioCnt:
                logger.warn(f"have  down load finish, {metricInfo.to_string()}")
                self.is_need_stop = True
                break
@@ -436,7 +436,7 @@ class App(customtkinter.CTk):
             time.sleep(10)
                     
     def set_frame_view(self, metricInfo):
-        percent = 1 if metricInfo.percentCurrent == 0 else metricInfo.percentCurrent
+        percent = 1 if metricInfo.currentVedioPercent == 0 else metricInfo.currentVedioPercent
         logger.warn(f'currentProgress:{percent}')
         self.progressbar.set(percent/100)
         
@@ -444,11 +444,12 @@ class App(customtkinter.CTk):
         if metricInfo.totalVedioCnt == 0:
            inP = "Yes"
         else:
-           inP = "No" if metricInfo.successVedioCnt + metricInfo.failVedioCnt < metricInfo.totalVedioCnt else "Yes"
+           inP = "No" if metricInfo.totalSuccessCnt + metricInfo.totalFailCnt < metricInfo.totalVedioCnt else "Yes"
 
-        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.successVedioCnt)).replace("FF", str(metricInfo.failVedioCnt)).replace("YY", inP)
+        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.totalSuccessCnt)).replace("FF", str(metricInfo.totalFailCnt)).replace("YY", inP)
         self.progress_label.configure(text=info)
        
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+    #CommonTool.convert_pathPic_pyFile("imgs", "pictures_v3")
