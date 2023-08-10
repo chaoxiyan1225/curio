@@ -1,27 +1,50 @@
+# -*- coding:utf-8 -*-  
 from instascrape import Reel
 import time
+from service.common_downloader import *
 
 # session id
 SESSIONID = "Paste session Id Here"
 
-# Header with session id
-headers = {
-	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)\
-	AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 \
-	Safari/537.36 Edg/79.0.309.43",
-	"cookie": f'sessionid={SESSIONID};'
-}
+class InstagramDownloader(CommonDownloader):
 
-# Passing Instagram reel link as argument in Reel Module
-insta_reel = Reel(
-	'https://www.instagram.com/reel/CKWDdesgv2l/?utm_source=ig_web_copy_link')
+    def __init__(self, savePath, url, vedioName=None, threadCnt = default_thread_cnt, blockSize = BLOCK_SIZE):
+         super(InstagramDownloader, self).__init__(savePath, url, vedioName, threadCnt, blockSize)
 
-# Using scrape function and passing the headers
-insta_reel.scrape(headers=headers)
+    def init(self):
+        self.gen_vedio_name()
 
-# Giving path where we want to download reel to the
-# download function
-insta_reel.download(fp=f".\\Desktop\\reel{int(time.time())}.mp4")
+    def clear(self):
+        return None
 
-# printing success Message
-print('Downloaded Successfully.')
+    def get_percent_current(self):
+        fenMu = 1000000 if self.downTotal==0 else self.downTotal
+        return int((self.downSuccess * 100) / fenMu)
+  
+    def get_metric(self):
+        self.metricInfo.percentCurrent = self.get_percent_current()
+        return self.metricInfo    
+
+
+    def downLoad_start(self):
+
+        self.init()
+        insta_reel = Reel(self.url)
+        self.downTotal = 1
+		# Using scrape function and passing the headers
+        insta_reel.scrape(headers=headers)
+        current = 0
+        while current < RETRY_TIME:
+            try:   
+                filePath = self.download_path / self.vedioName
+                current = current + 1
+                insta_reel.download(fp=filePath)
+                self.downSuccess = self.downTotal
+                logger.warn(f"the instagram: {self.url} download success")
+
+                return True
+            except Exception as e:
+                logger.error(f"instagram downloader error:{current} time".format(str(e)).encode("utf-8"))
+                logging.exception(e)
+
+        return False 
