@@ -1,74 +1,61 @@
+# -*- coding:utf-8 -*-  
 from datetime import datetime
 from tqdm import tqdm
 import requests
 import re
 import os
+from service.common_downloader import *
 
-def main():
-    try:
-        if len(list) == 2:
-            if 0 in list and 1 in list:
-                _input_1 = str(input("\nPress 'A' to download the video in HD quality.\nPress 'B' to download the video in SD quality.\n: ")).upper()
-                if _input_1 == 'A':
-                    download_video("HD")
+class FacebookDownloader(CommonDownloader):
 
-                if _input_1 == 'B':
-                    download_video("SD")
+    def __init__(self, savePath, url, vedioName=None, threadCnt = default_thread_cnt, blockSize = BLOCK_SIZE):
+         super(FacebookDownloader, self).__init__(savePath, url, vedioName, threadCnt, blockSize)
 
-        if len(list) == 2:
-            if 1 in list and 2 in list:
-                _input_2 = str(input("\nOops! The video is not available in HD quality. Would you like to download it? ('Y' or 'N'): ")).upper()
-                if _input_2 == 'Y':
-                    download_video("SD")
-                if _input_2 == 'N':
-                    exit()
+    def init(self):
+        self.gen_vedio_name()
 
-        if len(list) == 2:
-            if 0 in list and 3 in list:
-                _input_2 = str(input("\nOops! The video is not available in SD quality. Would you like to download it? ('Y' or 'N'): \n")).upper()
-                if _input_2 == 'Y':
-                    download_video("HD")
-                if _input_2 == 'N':
-                    exit()
-    except(KeyboardInterrupt):
-        print("\nProgramme Interrupted")
+    def clear(self):
+        return
 
+    def get_percent_current(self):
+        fenMu = 1000000 if self.downTotal==0 else self.downTotal
+        return int((self.downSuccess * 100) / fenMu)
+  
+    def get_metric(self):
+        self.metricInfo.percentCurrent = self.get_percent_current()
+        return self.metricInfo    
 
-def download_video(quality):
-    """Download the video in HD or SD quality"""
-    print(f"\nDownloading the video in {quality} quality... \n")
-    video_url = re.search(rf'{quality.lower()}_src:"(.+?)"', html).group(1)
-    file_size_request = requests.get(video_url, stream=True)
-    file_size = int(file_size_request.headers['Content-Length'])
-    block_size = 1024
-    filename = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-    t = tqdm(total=file_size, unit='B', unit_scale=True, desc=filename, ascii=True)
-    with open(filename + '.mp4', 'wb') as f:
-        for data in file_size_request.iter_content(block_size):
-            t.update(len(data))
-            f.write(data)
-    t.close()
-    print("\nVideo downloaded successfully.")
+    def downLoad_start(self):
 
-url = input("\nEnter the URL of Facebook video: ")
+        current = 0
+        while current < RETRY_TIME:
+            try:
+                self.init()
+               
+                current = current + 1
+                html = requests.get(self.url).content.decode('utf-8')
+                logger.warn(f"facebook downloader the video in sd quality... \n")
+                tmp_url = re.search(rf'sd_src:"(.+?)"', html) if re.search(rf'sd_src:"(.+?)"', html) != None else re.search(rf'hd_src:"(.+?)"', html)
 
-x = re.match(r'^(https:|)[/][/]www.([^/]+[.])*facebook.com', url)
-if x:
-    html = requests.get(url).content.decode('utf-8')
-else:
-    print("\nNot related with Facebook domain.")
-    exit()
+                if tmp_url == None:
+                    logger.error(f"facebookdown load error, the:{self.url}have no vedio ")
+                    return False
+                
+                video_url =  tmp_url.group(1)
+                file_size_request = requests.get(video_url, stream=True)
+                self.downTotal = int(file_size_request.headers['Content-Length'])
+                filename = self.download_path / self.vedioName
 
-_qualityhd = re.search('hd_src:"https', html)
-_qualitysd = re.search('sd_src:"https', html)
-_hd = re.search('hd_src:null', html)
-_sd = re.search('sd_src:null', html)
+                with open(filename + '.mp4', 'wb') as f:
+                    for data in file_size_request.iter_content(BLOCK_SIZE):
+                        self.downSuccess = self.downSuccess + BLOCK_SIZE
+                        f.write(data)
 
-list = []
-_thelist = [_qualityhd, _qualitysd, _hd, _sd]
-for id,val in enumerate(_thelist):
-    if val != None:
-        list.append(id)
+                logger.warn(f"the facebook : {self.url} download success")
+                return True
 
-main()
+            except Exception as e:
+                print(f"facebook  {self.url} download error :{current} time ".format(str(e)).encode("utf-8"))
+                logging.exception(e)
 
+        return False
