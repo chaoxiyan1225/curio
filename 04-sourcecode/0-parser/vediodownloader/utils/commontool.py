@@ -25,7 +25,7 @@ data = 'hello world'
 pictures = ['ab.png','dl.png','buy.png','dq.png','fund.png','icon.png','rg.png','stock.png', 'weixin.png', 'zhifubao.png']
 
 
-def picToPythonFile(picture_names, py_name):
+def picToPythonFile(picture_names, path ,py_name):
     """
     将图像文件转换为py文件
     :param picture_name:
@@ -34,48 +34,72 @@ def picToPythonFile(picture_names, py_name):
     write_data = []
     for picture_name in picture_names:
         filename = picture_name.replace('.', '_')
-        open_pic = open("%s" % picture_name, 'rb')
+        open_pic = open("%s/%s" % (path, picture_name), 'rb')
         b64str = base64.b64encode(open_pic.read())
         open_pic.close()
         # 注意这边b64str一定要加上.decode()
-        write_data.append('%s = "%s"\n' % (filename, b64str.decode()))
+        #write_data.append('%s = b\'%s\'\n' % (filename, b64str.decode()))
+        write_data.append('%s = %s \n' % (filename, b64str))
 
     f = open('%s.py' % py_name, 'w+')
     for data in write_data:
         f.write(data)
     f.close()
 
+def picToBytePythonFile(picture_names, path ,py_name):
+    """
+    将图像文件转换为py文件
+    :param picture_name:
+    :return:
+    """
+    write_data = []
+    for picture_name in picture_names:
+        filename = picture_name.replace('.', '_')
+        open_pic = open("%s/%s" % (path, picture_name), 'rb')
+        #b64str = base64.b64encode(open_pic.read())
+        bytes =  open_pic.read()
+        open_pic.close()
+        # 注意这边b64str一定要加上.decode()
+        #write_data.append('%s = b\'%s\'\n' % (filename, b64str.decode()))
+        write_data.append('%s = %s \n' % (filename, bytes))
 
-# aes 加密 要求key要16byte
+    f = open('%s.py' % py_name, 'w+')
+    for data in write_data:
+        f.write(data)
+    f.close()
+
+def convert_pathPic_pyFile(path = "imgs", pyfileName = "pictures{_v2}"):
+
+    walks  = os.walk(path)
+    picNames = []
+    for path, dir_list,file_list in walks:
+        for fileName in file_list:
+            picNames.append(fileName)
+
+    picToBytePythonFile(picNames, path, pyfileName)
+
+# aes key must 16byte
 def AES_Encode(data, key = default_key):
-   # 将长度不足16字节的字符串补齐
+   
     if len(data) < 16:
         data = pad(data)
-    # 创建加密对象
+   
     AES_obj = AES.new(key.encode("utf-8"), AES.MODE_CBC, iv.encode("utf-8"))
-    # 完成加密
     AES_en_str = AES_obj.encrypt(data.encode("utf-8"))
-    # 用base64编码一下
     AES_en_str = base64.b64encode(AES_en_str)
-    # 最后将密文转化成字符串
     AES_en_str = AES_en_str.decode("utf-8")
+
     return AES_en_str
 
-# aes解密 要求key要16byte
 def AES_Decode(data, key = default_key):
-    # 解密过程逆着加密过程写
-    # 将密文字符串重新编码成二进制形式
     data = data.encode("utf-8")
-    # 将base64的编码解开
     data = base64.b64decode(data)
-    # 创建解密对象
     AES_de_obj = AES.new(key.encode("utf-8"), AES.MODE_CBC, iv.encode("utf-8"))
-    # 完成解密
     AES_de_str = AES_de_obj.decrypt(data)
-    # 去掉补上的空格
+    #去掉之前补齐的空格
     AES_de_str = AES_de_str.strip()
-    # 对明文解码
     AES_de_str = AES_de_str.decode("utf-8")
+
     return AES_de_str
 
 # 将原始的明文用空格填充到16字节
