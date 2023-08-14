@@ -19,7 +19,7 @@ from conf.pictures_v3 import *
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
-PROGRESS_INFO = "【下载信息汇总】当前共有视频:TT个,下载成功:SS个,失败:FF,流程是否终止:YY"
+PROGRESS_INFO = "【下载信息汇总】当前下载链接:UU个,正在下载第:CC个链接,本链接共有:TT个视频,下载成功:SS个,失败:FF,下载是否进行中:YY"
 
 class App(customtkinter.CTk):
 
@@ -435,18 +435,22 @@ class App(customtkinter.CTk):
                
             time.sleep(10)
                     
-    def set_frame_view(self, metricInfo):
-        percent = 1 if metricInfo.currentVedioPercent == 0 else metricInfo.currentVedioPercent
+    def set_frame_view(self, metricInfo:TotalMetricInfo):
+        currMetric = metricInfo.currentMetricInfo
+        percent = currMetric.percentCurrent
+
         logger.warn(f'currentProgress:{percent}')
         self.progressbar.set(percent/100)
         
         inP = "Yes"
-        if metricInfo.totalVedioCnt == 0:
+        if currMetric.totalVedioCnt == 0:
            inP = "Yes"
         else:
-           inP = "No" if metricInfo.totalSuccessCnt + metricInfo.totalFailCnt < metricInfo.totalVedioCnt else "Yes"
+           inP = "No" if currMetric.successVedioCnt + currMetric.failVedioCnt < currMetric.totalVedioCnt else "Yes"
 
-        info = PROGRESS_INFO.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.totalSuccessCnt)).replace("FF", str(metricInfo.totalFailCnt)).replace("YY", inP)
+        info = PROGRESS_INFO.replace("UU", str(metricInfo.totalUrlCnt)).replace("CC", str(metricInfo.currentUrl))
+        info = info.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.totalSuccessCnt)).replace("FF", str(metricInfo.totalFailCnt)).replace("YY", inP)
+        
         self.progress_label.configure(text=info)
        
 if __name__ == "__main__":
