@@ -31,7 +31,9 @@ class TotalMetricInfo:
         self.totalVedioCnt = 0
         self.totalFailCnt = 0
         self.totalSuccessCnt = 0
-        self.currentVedioPercent = 0
+        self.currentMetricInfo = None
+        self.totalUrlCnt = 0
+        self.currentUrl = 0 
 
 class  DownloadControl:
 
@@ -67,7 +69,7 @@ class  DownloadControl:
             tmpTotalMetric.totalSuccessCnt = v.successVedioCnt + tmpTotalMetric.totalSuccessCnt
             tmpTotalMetric.totalVedioCnt = v.totalVedioCnt + tmpTotalMetric.totalVedioCnt
 
-        tmpTotalMetric.currentVedioPercent = self.currentDownLoader.get_percent_current()
+        tmpTotalMetric.currentMetricInfo = self.currentDownLoader.get_metric()
         
         self.lock.acquire()
         self.totalMetricInfo = tmpTotalMetric
@@ -119,9 +121,12 @@ class  DownloadControl:
         
         # first parse all vedio url
         self.parse_all_vedios(urls)
+        count = 0
 
         for url in urls:
+            count = count + 1
             self.currentDownLoader = self.get_downloader_by_url(url)
+            self.totalMetricInfo.currentUrl = count
             self.currentDownLoader.downLoad_start()
             self.update_total_metrics(url, self.currentDownLoader.get_metric())
               
