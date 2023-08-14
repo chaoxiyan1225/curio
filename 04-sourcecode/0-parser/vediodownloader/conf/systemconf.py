@@ -14,3 +14,7 @@ emailFrom = email
 emailPwd = 'VxqRl8Zr1ekcTvzxSndoUw=='
 emailSender = 'SPEEEEEEED'
 contackUs = f'QQ:{contackQQ} , email:{email}'
+
+FACE_BOOK = "www.facebook.com"
+YOUTOBE = "www.youtube.com"
+INSTAGRAM = "www.instagram.com"
