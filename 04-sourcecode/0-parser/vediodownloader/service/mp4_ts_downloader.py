@@ -32,10 +32,8 @@ class  MP4TSDownloader(CommonDownloader):
         self.m3u8Ulrs = set()  # total vedios
         self.mp4Urls = set()   # total vedios
 
-        #新建日期文件夹
         addPath = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         self.download_path = os.path.join(self.download_path, addPath)
-        #logger.warning self.download_path
         os.mkdir(self.download_path)
 
         self.download_ts = os.path.join(self.download_path, "tsfile")
@@ -48,7 +46,7 @@ class  MP4TSDownloader(CommonDownloader):
         return int((self.downSuccess * 100) / fenMu)
   
     def get_metric(self):
-        self.metricInfo.percentCurrent = self.get_percent_current()
+        self.metricInfo.percentCurrent = self.get_percent_current() if self.get_percent_current() > 0 else 1
         return self.metricInfo    
 
 
