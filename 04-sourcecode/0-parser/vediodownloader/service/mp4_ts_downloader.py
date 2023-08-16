@@ -381,8 +381,9 @@ class  MP4TSDownloader(CommonDownloader):
         self.parse_all_vedios(self.url)
         self.metricInfo.totalVedioCnt = len(self.m3u8Ulrs) + len(self.mp4Urls)
            
-        logger.warn(f'the url:{url},共含m3u8文件{len(self.m3u8Ulrs)}, mp4的文件个数{len(self.mp4Urls)}')
+        logger.warn(f'the url:{self.url},共含m3u8文件{len(self.m3u8Ulrs)}, mp4的文件个数{len(self.mp4Urls)}, the vedioname {self.vedioName}')
         
+       
         count = 0
         for m3u8Url in self.m3u8Ulrs:
             self.downSuccess = 0

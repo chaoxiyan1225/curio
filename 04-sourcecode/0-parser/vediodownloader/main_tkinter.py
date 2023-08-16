@@ -19,7 +19,7 @@ from conf.pictures_v3 import *
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
-PROGRESS_INFO = "【下载信息汇总】当前下载链接:UU个,正在下载第:CC个链接,本链接共有:TT个视频,下载成功:SS个,失败:FF,下载是否进行中:YY"
+PROGRESS_INFO = "【下载详情】共UU个链接,正在下载第:CC个链接,本链接共有:TT个视频,下载成功:SS个,失败:FF,是否下载完成:YY"
 
 class App(customtkinter.CTk):
 
@@ -51,7 +51,7 @@ class App(customtkinter.CTk):
 
         self.title("Octopus Brother")
 
-        self.geometry(f"{980}x{560}")
+        self.geometry(f"{1000}x{560}")
         self.iconbitmap('logo.ico') 
 
         # set grid layout 1x2
@@ -420,17 +420,25 @@ class App(customtkinter.CTk):
             logger.error(f"the input url:{urls} download fail, and error msg: {str(e1)}")
             messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
             #self.is_need_stop = True
-            logging.exception(e1)
+            logger.exception(e1)
             self.downloadCtrl.clear()
         
     def inside_thread(self):
         while True:
             metricInfo = self.downloadCtrl.get_total_metrics()
+            if metricInfo == None:
+               time.sleep(5)
+               continue
+            
             self.set_frame_view(metricInfo)
 
             if metricInfo.totalVedioCnt > 0 and metricInfo.totalFailCnt + metricInfo.totalSuccessCnt >= metricInfo.totalVedioCnt:
                logger.warn(f"have  down load finish, {metricInfo.to_string()}")
                self.is_need_stop = True
+               break
+               
+            if not self.downloadCtrl.downloading:
+               logger.warn(f'the downloader finish')
                break
                
             time.sleep(10)
@@ -449,7 +457,7 @@ class App(customtkinter.CTk):
            inP = "No" if currMetric.successVedioCnt + currMetric.failVedioCnt < currMetric.totalVedioCnt else "Yes"
 
         info = PROGRESS_INFO.replace("UU", str(metricInfo.totalUrlCnt)).replace("CC", str(metricInfo.currentUrl))
-        info = info.replace("TT", str(metricInfo.totalVedioCnt)).replace("SS", str(metricInfo.totalSuccessCnt)).replace("FF", str(metricInfo.totalFailCnt)).replace("YY", inP)
+        info = info.replace("TT", str(currMetric.totalVedioCnt)).replace("SS", str(currMetric.successVedioCnt)).replace("FF", str(currMetric.failVedioCnt)).replace("YY", inP)
         
         self.progress_label.configure(text=info)
        

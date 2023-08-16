@@ -25,10 +25,11 @@ class YoutubeDownloader(CommonDownloader):
 
     def downLoad_start(self):
         try:
+            logger.warn(f"youtube downloader start download from  {self.url}")
             self.init()
-            yt=YouTube(url)
+            yt=YouTube(self.url)
         except Exception as e:
-            print("[ERROR      ] {0}".format(str(e)).encode("utf-8"))
+            logger.error("[ERROR      ] {0}".format(str(e)).encode("utf-8"))
             return -1
 
         pattern = r'[\/.:*?"<>|]+'
@@ -47,9 +48,11 @@ class YoutubeDownloader(CommonDownloader):
         
         current = 0
         self.downTotal = 1
+        self.totalVedioCnt = 1
+
         while current < RETRY_TIME:
             try:   
-                logger.warn("[DOWNLOAD] {0}".format(self.vedioName))
+                logger.warn("youtube downloader [DOWNLOAD] {0}".format(self.vedioName))
                 yt.streams.filter(subtype='mp4',progressive=True)\
                         .order_by('resolution')\
                         .desc()\
@@ -58,10 +61,11 @@ class YoutubeDownloader(CommonDownloader):
                 current = current + 1 
                 self.downSuccess = self.downTotal
                 logger.warn("youtube download success".format(self.vedioName))
-                
+                self.successVedioCnt = 1                
                 return True
             except Exception as e:
                 logger.error(f"the youtube download error, {current} time".format(str(e)).encode("utf-8"))
                 logging.exception(e)
+                self.failVedioCnt = 1
 
         return False

@@ -55,7 +55,7 @@ class FacebookDownloader(CommonDownloader):
                 return True
 
             except Exception as e:
-                print(f"facebook  {self.url} download error :{current} time ".format(str(e)).encode("utf-8"))
+                logger.error(f"facebook  {self.url} download error :{current} time ".format(str(e)).encode("utf-8"))
                 logging.exception(e)
 
         return False

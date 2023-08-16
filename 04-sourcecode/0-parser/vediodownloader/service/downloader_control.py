@@ -34,6 +34,7 @@ class TotalMetricInfo:
         self.currentMetricInfo = None
         self.totalUrlCnt = 0
         self.currentUrl = 0 
+        self.downloading = True
 
 class  DownloadControl:
 
@@ -62,17 +63,12 @@ class  DownloadControl:
         logger.warn(f'------downloadContrl init:end-----------')
 
     def get_total_metrics(self):
-
-        tmpTotalMetric = TotalMetricInfo()
-        for k , v in metricMap.items():
-            tmpTotalMetric.totalFailCnt = v.failvedioCnt +  tmpTotalMetric.totalFailCnt
-            tmpTotalMetric.totalSuccessCnt = v.successVedioCnt + tmpTotalMetric.totalSuccessCnt
-            tmpTotalMetric.totalVedioCnt = v.totalVedioCnt + tmpTotalMetric.totalVedioCnt
-
-        tmpTotalMetric.currentMetricInfo = self.currentDownLoader.get_metric()
-        
+    
+        if self.currentDownLoader == None:
+           return None
+           
         self.lock.acquire()
-        self.totalMetricInfo = tmpTotalMetric
+        self.totalMetricInfo.currentMetricInfo = self.currentDownLoader.get_metric()
         self.lock.release()
 
         return self.totalMetricInfo    
@@ -97,6 +93,7 @@ class  DownloadControl:
     #         print(asyncio.run(get_url_vedios(url=url)))
  
     def clear(self):
+        self.downloading = False
         return None
     
     def get_downloader_by_url(self, url):
@@ -117,16 +114,21 @@ class  DownloadControl:
     def downLoad_start(self, urls, savePath, mp4Name = None):
         self.init(savePath)
 
-        self.vedioName = mp4Name if mp4Name != None else None
-        
         # first parse all vedio url
-        self.parse_all_vedios(urls)
+        #self.parse_all_vedios(urls)
         count = 0
 
         for url in urls:
             count = count + 1
             self.currentDownLoader = self.get_downloader_by_url(url)
+            self.vedioName = mp4Name if mp4Name != None else self.currentDownLoader.gen_vedio_name()
+            
+            logger.warn(f'the download contrl, vedioname {self.vedioName}')
+            
+            self.currentDownLoader.vedioName = self.vedioName
+            
             self.totalMetricInfo.currentUrl = count
+            self.totalMetricInfo.totalUrlCnt = len(urls)
             self.currentDownLoader.downLoad_start()
             self.update_total_metrics(url, self.currentDownLoader.get_metric())
               
