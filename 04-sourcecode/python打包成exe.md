@@ -34,6 +34,10 @@ pyinstaller -F -w -i g:\2345Downloads\logo.ico main.py
 # 三、ico 图片生成
 自己做的软件都喜欢放上自己的图标，不过哪来那么多 ico 图片呢？一个是可以找专门的 ico 图片网站，不过都很小众，图片库也很小。另一个是可以自己生成，这里就给大家分享一个网站，可以把其他格式图片转成 ico 格式：在线图片转icon格式 – 图片转换成icon在线工具 – 迅捷PDF转换器在线免费版
 
+# custumertkinter 打包
+pyinstaller -F -w -i  /E/sourcecode/gitproject/curio/04-sourcecode/0-parser/vediodownloader/logo.ico  main_tkinter.py --collect-all customtkinter
+
+
 #  四、把图片打包进  exe 
    https://blog.csdn.net/ziigea/article/details/112647727
 
