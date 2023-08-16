@@ -79,14 +79,14 @@ class SoftWareContrl:
           headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
           req = urllib.request.Request(gitZipFileName,headers=headers)
           
-          #logger.warning(f'logger.warning headers {headers}')
+          #logger.warn(f'logger.warn headers {headers}')
           userRead = urllib.request.urlopen(req, timeout=6)
           data = userRead.read()
-          #logger.warning(f'data : {data}')
+          #logger.warn(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
           if not len(files):
-             logger.warning(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.warn(f'down load conf error! contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              status = ""
              return None, Errors.S_InvalidFileContent
           confFile = None
@@ -95,17 +95,17 @@ class SoftWareContrl:
               if confFileName in file:
                  confFile = file
                  break     
-          #logger.warning(f'the fils : {files}')
+          #logger.warn(f'the fils : {files}')
 
           with zipFile.open(confFile, 'r') as tmpFile:
              jsonData = tmpFile.read()
              if not jsonData:
-                logger.warning(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+                logger.warn(f'the conf has no data.exit! , contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
                 return None, Errors.S_InvalidFileContent
 
              confJson = json.loads(jsonData.decode().strip('\t\n'))
              if not confJson:
-                logger.warning(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
+                logger.warn(f'software conf load error, contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')     
                 return None, Errors.S_InvalidFileContent
 
              if jsonObject:
@@ -116,7 +116,7 @@ class SoftWareContrl:
              
           return None, Errors.S_ParseFail
        except Exception as e:
-             logger.warning(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
+             logger.warn(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              return None, Errors.S_ParseFail
 
    '''
@@ -129,7 +129,7 @@ class SoftWareContrl:
          return error
       
       if softWareConf.isFree.lower() == 'true':
-         logger.warning('the software isFree to use')
+         logger.warn('the software isFree to use')
          return  Errors.S_ClientFreeUse
 
       if softWareConf.clientEnable.lower() == 'false':
@@ -140,5 +140,5 @@ class SoftWareContrl:
          logger.error(f'the client verion not alow, client:{SystemConf.clientVersion}. and server version see software.conf')
          return Errors.C_VersionTooLow
       
-      logger.warning('the client valid success')
+      logger.warn('the client valid success')
       return Errors.SUCCESS
