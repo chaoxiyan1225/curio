@@ -434,7 +434,6 @@ class App(customtkinter.CTk):
         t.start()
             
     def downLoading(self, urls, savePath):
-    
         try:
             self.downloadCtrl.downLoad_start(urls, savePath)
         except Exception as e1:
@@ -461,7 +460,7 @@ class App(customtkinter.CTk):
             if not self.downloadCtrl.downloading:
                logger.warn(f'the downloader finish')
                break
-               
+          
             time.sleep(10)
                     
     def set_frame_view(self, metricInfo:TotalMetricInfo):

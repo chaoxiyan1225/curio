@@ -70,7 +70,7 @@ class  CommonDownloader(object):
                 pagetitle = soup.find("title")
 
                 if pagetitle: 
-                   vedioName = pagetitle[:40]
+                   vedioName = pagetitle.values[:40]
                    return vedioName 
               
             except Exception as e:

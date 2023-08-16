@@ -34,7 +34,6 @@ class TotalMetricInfo:
         self.currentMetricInfo = None
         self.totalUrlCnt = 0
         self.currentUrl = 0 
-        self.downloading = True
 
 class  DownloadControl:
 
@@ -45,6 +44,7 @@ class  DownloadControl:
         self.totalMetricInfo = None
         self.vedioName = None
         self.download_path = None
+        self.downloading = True
         self.lock = threading.Lock()
 
     '''
