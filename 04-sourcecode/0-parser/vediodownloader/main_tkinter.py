@@ -54,7 +54,14 @@ class App(customtkinter.CTk):
         self.title("Octopus Brother")
 
         self.geometry(f"{1000}x{560}")
-        self.iconbitmap('logo.ico') 
+        #self.iconbitmap('logo.ico')
+        #将import进来的icon.py里的数据转换成临时文件tmp.ico，作为图标
+        tmp = open('tmp.ico', 'wb+')
+        tmp.write(logo_2_ico)
+        tmp.close()
+        self.iconbitmap('tmp.ico')
+        os.remove('tmp.ico')
+
 
         # set grid layout 1x2
         self.grid_rowconfigure((0), weight=1)
