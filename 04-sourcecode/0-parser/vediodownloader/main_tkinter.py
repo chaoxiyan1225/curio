@@ -53,7 +53,7 @@ class App(customtkinter.CTk):
 
         self.title("Octopus Brother")
         self.geometry(f"{1000}x{560}")
-        
+
         #self.iconbitmap('logo.ico')
         #将import进来的icon.py里的数据转换成临时文件tmp.ico，作为图标
         tmp = open('tmp.ico', 'wb+')
