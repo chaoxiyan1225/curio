@@ -52,9 +52,15 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title("Octopus Brother")
-
         self.geometry(f"{1000}x{560}")
-        self.iconbitmap('logo.ico') 
+        
+        #self.iconbitmap('logo.ico')
+        #将import进来的icon.py里的数据转换成临时文件tmp.ico，作为图标
+        tmp = open('tmp.ico', 'wb+')
+        tmp.write(logo_2_ico)
+        tmp.close()
+        self.iconbitmap('tmp.ico')
+        os.remove('tmp.ico')
 
         # set grid layout 1x2
         self.grid_rowconfigure((0), weight=1)
@@ -181,8 +187,8 @@ class App(customtkinter.CTk):
         self.select_frame_by_name("download")
         self.change_appearance_mode_event("light")
 
-        t = threading.Thread(target=self.async_load_urls)
-        t.start()
+        #t = threading.Thread(target=self.async_load_urls)
+        #t.start()
 
     def select_frame_by_name(self, name):
         # set button color for selected button
@@ -276,25 +282,6 @@ class App(customtkinter.CTk):
                 if int(entry.grid_info()["column"] == 15):
                     entry.grid(row=currentR-1, column=15, columnspan=1, padx=(0,20), pady=(0,0), sticky="ew")
 
-                    
-    def async_load_urls(self):
-        table = []
-        row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
-        for r in range(4):
-            for c in range(4):
-                widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="Language Select:",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      anchor="w")
-                widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
-                row.append(widget)    #把每次创建的Entry对象添加到row列表里
-            table.append(row)       #把row列表添加到table列表里，使table成为一个二维列表。
-        
-        ##加个表头试一下
-        field = ['url','suggest','website', 'suggest']
-        for t in field:
-            table[0][field.index(t)].configure(
-                            textvariable=customtkinter.StringVar(value=t)
-                            )
             
     def check_register_valid(self):
         tel = self.tel_entry.get()        
@@ -379,6 +366,7 @@ class App(customtkinter.CTk):
 
     def select_path(self):
         filePath = filedialog.askdirectory()
+        self.save_entry.delete(0, 10000)
         self.save_entry.insert(0,filePath)
         
     
@@ -480,8 +468,32 @@ class App(customtkinter.CTk):
         info = info.replace("TT", str(currMetric.totalVedioCnt)).replace("SS", str(currMetric.successVedioCnt)).replace("FF", str(currMetric.failVedioCnt)).replace("YY", inP)
         
         self.progress_label.configure(text=info)
+        
+    
+    '''
+    def async_load_urls(self):
+        table = []
+        row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
+        for r in range(4):
+            for c in range(4):
+                widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="Language Select:",
+                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                      anchor="w")
+                widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
+                row.append(widget)    #把每次创建的Entry对象添加到row列表里
+            table.append(row)       #把row列表添加到table列表里，使table成为一个二维列表。
+        
+        ##加个表头试一下
+        field = ['url','suggest','website', 'suggest']
+        for t in field:
+            table[0][field.index(t)].configure(
+                            textvariable=customtkinter.StringVar(value=t)
+                            )
+    '''    
+       
        
 if __name__ == "__main__":
     app = App()
     app.mainloop()
     #CommonTool.convert_pathPic_pyFile("imgs", "pictures_v3")
+
