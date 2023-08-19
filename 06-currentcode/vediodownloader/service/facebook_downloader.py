@@ -40,6 +40,7 @@ class FacebookDownloader(CommonDownloader):
                 logger.warn(soup)
                 
                 soup.find("aa")
+                vedio_url = None
                 if vedio_url == None:
                     logger.error(f"facebookdown load error, the:{self.url} have no vedio ")
                     return False

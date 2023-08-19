@@ -1,5 +1,5 @@
 #coding=utf8
-import sys, os
+import sys, os, time
 import requests, json
 import urllib.request
 import ssl
@@ -15,7 +15,9 @@ from email.mime.text import MIMEText
 from email.header import Header
 import conf.systemconf as SystemConf
 import re
-
+import utils.logger as logger
+RETRY_TIME = 3
+import logging
 
 
 iv =  '5947814788888888'
@@ -23,6 +25,9 @@ default_key = 'vedioprocesskey6'
 data = 'hello world'
 
 pictures = ['ab.png','dl.png','buy.png','dq.png','fund.png','icon.png','rg.png','stock.png', 'weixin.png', 'zhifubao.png']
+
+headers={
+        'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
 
 
 def picToPythonFile(picture_names, path ,py_name):
@@ -164,6 +169,24 @@ def emailRight(email:str) -> bool:
         return False
 
     return True
+    
+def send_getRequest(url):
+    current = 0
+    delay = 5
+    while current < RETRY_TIME:
+        try: 
+            current = current + 1
+            response = requests.get(url, headers=headers)
+            
+            return response
+          
+        except Exception as e:
+            logger.error(f" send request error, {url} {e}".encode("utf-8"))
+            logging.exception(e)
+            time.sleep(delay)
+            delay *= 2
+
+    return None
 
 if __name__ == '__main__':
     #sendRegisterMsg('')

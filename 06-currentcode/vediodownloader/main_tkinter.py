@@ -368,6 +368,7 @@ class App(customtkinter.CTk):
         filePath = filedialog.askdirectory()
         self.save_entry.delete(0, 10000)
         self.save_entry.insert(0,filePath)
+        self.save_entry.configure(fg_color="white") 
         
     
     def parse_allUrls(self):
@@ -428,7 +429,7 @@ class App(customtkinter.CTk):
             logger.error(f"the input url:{urls} download fail, and error msg: {str(e1)}")
             messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
             #self.is_need_stop = True
-            logger.exception(e1)
+            logging.exception(e1)
             self.downloadCtrl.clear()
         
     def inside_thread(self):

@@ -10,6 +10,7 @@ from retry import retry# 导入 retry 库以方便进行下载出错重试
 from bs4 import BeautifulSoup
 
 import utils.logger as logger
+import utils.commontool as CommonTool
 import shutil
 
 from service.common_downloader import *
@@ -72,14 +73,13 @@ class  MP4TSDownloader(CommonDownloader):
             logger.warn(f'the vedio url {url}')
             response = requests.head(url)
             file_size = response.headers.get('Content-Length')
-            logger.warn(response)
             if file_size is None:
                 if raise_error is True:
                     raise ValueError('该文件不支持多线程分段下载！')
                 return file_size
             return int(file_size)
 
-        def download(self, url: str, file_name: str, retry_times: int = 3, each_size=16*MB) -> None:
+        def download(self, url: str, file_name: str, retry_times: int = 3, each_size=2*MB) -> None:
             mp4Name = os.path.join(self.download_path, file_name + ".mp4")
             f = open(mp4Name, 'ab')
             file_size = self.get_file_size(url)
@@ -91,7 +91,18 @@ class  MP4TSDownloader(CommonDownloader):
             def start_download(start: int, end: int) -> None:
                 _headers = headers.copy()
                 _headers['Range'] = f'bytes={start}-{end}'
+                logger.info(f'download bytes={start}-{end}')
                 response = session.get(url, headers=_headers, stream=True)
+                
+                f.seek(start)
+                f.write(response.content)
+                
+                self.vedioDownLoader.lock.acquire()
+                self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + chunk_size
+                self.vedioDownLoader.lock.release()
+               
+
+                '''
                 chunk_size = 128
         
                 chunks = []
@@ -99,7 +110,7 @@ class  MP4TSDownloader(CommonDownloader):
                     chunks.append(chunk)
                     ##bar.update(chunk_size)
                     self.vedioDownLoader.lock.acquire()
-                    self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + 1
+                    self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + chunk_size
                     self.vedioDownLoader.lock.release()
 
                 f.seek(start)
@@ -107,11 +118,14 @@ class  MP4TSDownloader(CommonDownloader):
                     f.write(chunk)
             
                 del chunks
+                '''
 
             session = requests.Session()
             each_size = min(each_size, file_size)
             parts = self.split(0, file_size, each_size)
-            logger.warn(f'分块数：{len(parts)}')
+            logger.warn(f'分块数：{len(parts)}, {parts}')
+            
+            self.vedioDownLoader.downTotal = file_size
          
             ##bar = tqdm(total=file_size, desc=f'下载文件：{file_name}')
             for part in parts:
@@ -180,15 +194,16 @@ class  MP4TSDownloader(CommonDownloader):
     def parse_subUrls(self, url):
   
         logger.warn(f'need parse: {url}')
-        req = urllib.request.Request(url, headers = headers)
-        webpage = urllib.request.urlopen(req)
-        html = webpage.read()
-        soup = BeautifulSoup(html, 'html.parser')  
-        invalidLink1='#'
-        invalidLink2='javascript:void(0)'
-
         resultM3u8 = set()
         resultMp4 = set()
+        response = CommonTool.send_getRequest(url)
+        if not response:
+           return None, None
+           
+        soup = BeautifulSoup(response.text,'html.parser')
+       
+        invalidLink1='#'
+        invalidLink2='javascript:void(0)'
    
         mycount=0
         for k in soup.find_all('a'):

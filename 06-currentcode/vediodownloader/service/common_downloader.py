@@ -62,6 +62,7 @@ class  CommonDownloader(object):
     def gen_vedio_name(self):
         current = 0
         vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
+        delay = 5
         while current < RETRY_TIME:
             try: 
                 current = current + 1
@@ -69,8 +70,6 @@ class  CommonDownloader(object):
                 soup = BeautifulSoup(response.text,'html.parser')
                 pagetitle = soup.find("title")
                 
-                logger.warn(f'the tile:{pagetitle}')
-               
                 if pagetitle:
                    vedioName = str(pagetitle)[8:40].replace(" ", "")
                    return vedioName 
@@ -78,6 +77,8 @@ class  CommonDownloader(object):
             except Exception as e:
                 logger.error(f" parse title error, {self.url} {e}".encode("utf-8"))
                 logging.exception(e)
+                time.sleep(delay)
+                delay *= 2
 
         return vedioName
             

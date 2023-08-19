@@ -62,7 +62,7 @@ def inside_thread():
         
 def main():
 
-    urls = ["https://vqlwe8.com/video/91061/"]
+    urls = ["https://p8olrc.com/video/91141/"]
     savePath = "D:/"
     t = threading.Thread(target=downLoading, args=(urls, savePath))
     t2 = threading.Thread(target=inside_thread)

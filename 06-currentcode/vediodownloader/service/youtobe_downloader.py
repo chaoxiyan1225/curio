@@ -14,15 +14,15 @@ class YoutubeDownloader(CommonDownloader):
 
     def clear(self):
         return
-        
-    def progress_set(chunk, file_handle, bytes_remaining):
+    
+    def progress_set(stream = None, chunk = None, file_handle = None, remaining = None):
         filesize = chunk.filesize
-        current = ((filesize - bytes_remaining)/filesize)
+        current = ((filesize - remaining)/filesize)
         percent = ('{0:.1f}').format(current*100)
         progress = int(50*current)
         
         self.downTotal = filesize
-        self.downSuccess = filesize - bytes_remaining
+        self.downSuccess = filesize - remaining
        
     def get_percent_current(self):
         fenMu = 1000000 if self.downTotal==0 else self.downTotal
@@ -36,7 +36,7 @@ class YoutubeDownloader(CommonDownloader):
         try:
             logger.warn(f"youtube downloader start download from  {self.url}")
             self.init()
-            yt=YouTube(self.url, on_progress_callback = progress_set)
+            yt=YouTube(self.url, on_progress_callback = self.progress_set)
         except Exception as e:
             logger.error("[ERROR      ] {0}".format(str(e)).encode("utf-8"))
             return -1
