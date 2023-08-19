@@ -68,13 +68,15 @@ class  CommonDownloader(object):
                 response = requests.get(self.url, headers=headers)
                 soup = BeautifulSoup(response.text,'html.parser')
                 pagetitle = soup.find("title")
-
-                if pagetitle: 
-                   vedioName = pagetitle.values[:40]
+                
+                logger.warn(f'the tile:{pagetitle}')
+               
+                if pagetitle:
+                   vedioName = str(pagetitle)[8:40].replace(" ", "")
                    return vedioName 
               
             except Exception as e:
-                logger.error(f"parse title error, {self.url} str{e}".encode("utf-8"))
+                logger.error(f" parse title error, {self.url} {e}".encode("utf-8"))
                 logging.exception(e)
 
         return vedioName

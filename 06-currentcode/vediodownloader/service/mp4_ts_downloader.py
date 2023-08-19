@@ -29,14 +29,13 @@ class  MP4TSDownloader(CommonDownloader):
 
         logger.warn(f'------init mp4 ts start-----------')
         
-        self.m3u8Ulrs = set()  # total vedios
+        self.m3u8Urls = set()  # total vedios
         self.mp4Urls = set()   # total vedios
-
+        
+        
         addPath = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.download_path = os.path.join(self.download_path, addPath)
-        os.mkdir(self.download_path)
-
-        self.download_ts = os.path.join(self.download_path, "tsfile")
+                
+        self.download_ts = os.path.join(self.download_path, f"tsfile_{addPath}")
         os.mkdir(self.download_ts)
         logger.warn(f'------init mp4 ts end-----------')
 
@@ -52,12 +51,13 @@ class  MP4TSDownloader(CommonDownloader):
 
     class Mp4DownLoader:
 
-        def __init__(self, vedioDownLoader):
+        def __init__(self, vedioDownLoader, savePath):
             self.vedioDownLoader = vedioDownLoader
             self.vedioDownLoader.lock.acquire()
             self.vedioDownLoader.downSuccess = 0
             self.vedioDownLoader.downTotal = 0
             self.vedioDownLoader.lock.release()
+            self.download_path = savePath
 
         def split(self, start: int, end: int, step: int) -> list[tuple[int, int]]:
             parts = [(start, min(start+step, end))
@@ -68,8 +68,11 @@ class  MP4TSDownloader(CommonDownloader):
             return parts
 
         def get_file_size(self, url: str, raise_error: bool = False) -> int:
+        
+            logger.warn(f'the vedio url {url}')
             response = requests.head(url)
             file_size = response.headers.get('Content-Length')
+            logger.warn(response)
             if file_size is None:
                 if raise_error is True:
                     raise ValueError('该文件不支持多线程分段下载！')
@@ -80,6 +83,8 @@ class  MP4TSDownloader(CommonDownloader):
             mp4Name = os.path.join(self.download_path, file_name + ".mp4")
             f = open(mp4Name, 'ab')
             file_size = self.get_file_size(url)
+            
+            logger.warn(f'the file_size:{file_size}')
 
             @retry(tries=retry_times)
             @multitasking.task
@@ -201,7 +206,7 @@ class  MP4TSDownloader(CommonDownloader):
                 if '.m3u8' in link:
                     resultM3u8.add(link)
                 if '.mp4' in link:
-                    resultMp4.add(url)
+                    resultMp4.add(link)
                        
         # 51网适配        
         for k in soup.select('div[data-config]'):
@@ -217,11 +222,12 @@ class  MP4TSDownloader(CommonDownloader):
                   if url and  '.mp4' in url:
                      resultMp4.add(url)
                      
+        logger.debug(f'the parse_subUrls {resultMp4}, {resultM3u8}')
         logger.warn('preparse end......')
         return resultM3u8, resultMp4
 
     def mp4_download_1By1(self, url, mp4FileName):
-        mp4Down = self.Mp4DownLoader(self)
+        mp4Down = self.Mp4DownLoader(self, self.download_path)
         mp4Down.download(url, mp4FileName)
 
     
@@ -356,7 +362,7 @@ class  MP4TSDownloader(CommonDownloader):
         
         if '.m3u8' in url:
             logger.warn(f'原始URL只含一个视频文件{url}')
-            self.m3u8Ulrs.add(url)
+            self.m3u8Urls.add(url)
         elif '.mp4' in url:
             logger.warn(f'原始URL只含一个mp4视频文件{url}')
             self.mp4Urls.add(url)
@@ -368,7 +374,7 @@ class  MP4TSDownloader(CommonDownloader):
                 return
             
             for url in m3u8Tmps:
-                self.m3u8Ulrs.add(url)
+                self.m3u8Urls.add(url)
                 
             for url in mp4Tmps:
                 self.mp4Urls.add(url)
@@ -379,13 +385,15 @@ class  MP4TSDownloader(CommonDownloader):
         self.downTotal = 0   # to single vedio
         # first parse all vedio url
         self.parse_all_vedios(self.url)
-        self.metricInfo.totalVedioCnt = len(self.m3u8Ulrs) + len(self.mp4Urls)
+        self.metricInfo.totalVedioCnt = len(self.m3u8Urls) + len(self.mp4Urls)
            
-        logger.warn(f'the url:{self.url},共含m3u8文件{len(self.m3u8Ulrs)}, mp4的文件个数{len(self.mp4Urls)}, the vedioname {self.vedioName}')
+        logger.warn(f'the url:{self.url},共含m3u8文件{len(self.m3u8Urls)}, mp4的文件个数{len(self.mp4Urls)}, the vedioname: {self.vedioName}')
         
+        logger.debug(f'the m3u8urls:{self.m3u8Urls}')
+        logger.debug(f'the mp4ulrs:{self.mp4Urls}')        
        
         count = 0
-        for m3u8Url in self.m3u8Ulrs:
+        for m3u8Url in self.m3u8Urls:
             self.downSuccess = 0
             self.downTotal = 0
             count = count + 1
@@ -407,7 +415,7 @@ class  MP4TSDownloader(CommonDownloader):
             else:
                self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
 
-
+        self.clear()
         return True
 
 

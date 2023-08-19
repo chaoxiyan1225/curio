@@ -5,6 +5,7 @@ import requests
 import re
 import os
 from service.common_downloader import *
+from bs4 import BeautifulSoup
 
 class FacebookDownloader(CommonDownloader):
 
@@ -33,13 +34,17 @@ class FacebookDownloader(CommonDownloader):
                 self.init()
                
                 current = current + 1
-                html = requests.get(self.url).content.decode('utf-8')
-                logger.warn(f"facebook downloader the video in sd quality... \n")
-                tmp_url = re.search(rf'sd_src:"(.+?)"', html) if re.search(rf'sd_src:"(.+?)"', html) != None else re.search(rf'hd_src:"(.+?)"', html)
-
-                if tmp_url == None:
-                    logger.error(f"facebookdown load error, the:{self.url}have no vedio ")
+                response = requests.get(self.url, headers=headers)
+                soup = BeautifulSoup(response.text,'html.parser')
+                logger.warn(f"facebook downloader the video ... \n")
+                logger.warn(soup)
+                
+                soup.find("aa")
+                if vedio_url == None:
+                    logger.error(f"facebookdown load error, the:{self.url} have no vedio ")
                     return False
+                    
+                logger.warn(f'the url:{vedio_url}')
                 
                 video_url =  tmp_url.group(1)
                 file_size_request = requests.get(video_url, stream=True)

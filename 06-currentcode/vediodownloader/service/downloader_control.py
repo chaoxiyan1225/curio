@@ -101,7 +101,7 @@ class  DownloadControl:
            logger.error("the url illegal!")
            return None
         
-        if SystemConf.FACE_BOOK in url: 
+        if SystemConf.YOUTOBE in url: 
             return FacebookDownloader(self.download_path, url, self.vedioName)
         elif SystemConf.YOUTOBE in url:
             return YoutubeDownloader(self.download_path, url, self.vedioName)

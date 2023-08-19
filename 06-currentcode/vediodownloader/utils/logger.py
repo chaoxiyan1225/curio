@@ -4,9 +4,9 @@ import datetime
 def InitLogger(logFile, logLevel):    
     logger = logging.getLogger()      
     fileHandler = logging.FileHandler(logFile)        
-    formatter = logging.Formatter(        
-        "[%(asctime)s] [%(levelname)s]%(filename)s: %(lineno)s %(funcName)s %(message)s", "%Y-%m-%d %H:%M:%S"           
-    )           
+    formatter = logging.Formatter("%(asctime)s %(filename)s %(funcName)s %(lineno)s \
+      %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S")
+      
     fileHandler.setFormatter(formatter)        
     logger.addHandler(fileHandler)         
     logger.setLevel(logLevel)        
@@ -21,16 +21,8 @@ logger = InitLogger(
         datetime.datetime.now().day,          
     ),          
     logging.INFO,      
-)        
+) 
 
-
-'''
-
-from loguru import logger
-import datetime
-
-logger.add(f'vedioDownLoader_{datetime.datetime.now().year}-{datetime.datetime.now().month}-{datetime.datetime.now().day}.log',rotation="100 MB", retention='10 days', format='{time:YYYY-MM-DD :mm:ss} - {level} - {file} - {line} -{message}')
-'''
 def debug(msg)->None:
     logger.debug(msg)
  
@@ -42,4 +34,5 @@ def warn(msg)->None:
     
 def error(msg)->None:
     logger.error(msg)
+
     
