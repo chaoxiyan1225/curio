@@ -26,6 +26,8 @@ RETRY_TIME = 3
 
 MB = 1024**2
 
+sets = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
+
 class MetricInfo(object):
     def __init__(self, totalVedioCnt=0, successVedioCnt=0, percentCurrent=0):
          self.totalVedioCnt = totalVedioCnt
@@ -72,13 +74,17 @@ class  CommonDownloader(object):
         while current < RETRY_TIME:
             try: 
                 current = current + 1
-                response = requests.get(self.url, headers=headers, timeout=10)
+                response = requests.get(self.url, headers=headers, timeout=15)
                 soup = BeautifulSoup(response.text,'html.parser')
+
                 response.close()
                 pagetitle = soup.find("title")
                 
                 if pagetitle:
                    vedioName = str(pagetitle)[8:40].replace(" ", "")
+                   for char in vedioName:
+                        if char in sets:
+                            vedioName = vedioName.replace(char, '')
                    
                 invalidLink1='#'
                 invalidLink2='javascript:void(0)'
@@ -100,20 +106,34 @@ class  CommonDownloader(object):
                             resultM3u8.add(link)
                         if '.mp4' in link:
                             resultMp4.add(link)
-                               
-                # 51网适配        
-                for k in soup.select('div[data-config]'):
-                    jsonData = k.get('data-config')
-                    if jsonData:
-                       m3u8Json = json.loads(jsonData.strip('\t\n'))
-                       vedio = m3u8Json['video']
-                       if vedio:
-                          url = vedio['url']
-                          if url and  '.m3u8' in url:
-                             resultM3u8.add(url)
-                             
-                          if url and  '.mp4' in url:
-                             resultMp4.add(url)
+   
+                if len(resultM3u8) == 0 and len(resultMp4) == 0: 
+                    r=r"'(http.*\\.mp4?*)'"  
+                    re_mp4=re.compile(r)  
+                    mp4List=re.findall(re_mp4, response.text)  
+                    for url in mp4List:  
+                       resultMp4.add(url)
+                       
+                    r=r"'(http.*\\.m3u8?*)'"  
+                    re_m3u8=re.compile(r)  
+                    m3u8List=re.findall(re_m3u8, response.text)  
+                    for url in m3u8List:  
+                       resultM3u8.add(url)
+                   
+                if  len(resultM3u8) == 0 and len(resultMp4) == 0:     
+                    # 51网适配        
+                    for k in soup.select('div[data-config]'):
+                        jsonData = k.get('data-config')
+                        if jsonData:
+                           m3u8Json = json.loads(jsonData.strip('\t\n'))
+                           vedio = m3u8Json['video']
+                           if vedio:
+                              url = vedio['url']
+                              if url and  '.m3u8' in url:
+                                 resultM3u8.add(url)
+                                 
+                              if url and  '.mp4' in url:
+                                 resultMp4.add(url)
                              
                 logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
                 return vedioName, resultM3u8, resultMp4

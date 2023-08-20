@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-  
 import os, sys, time, signal, datetime
-import requests, urllib, json
+import requests, urllib3, json
 from Crypto.Cipher import AES #使用的是 pip install pycryptodome
 from binascii import b2a_hex, a2b_hex
 from concurrent.futures import ThreadPoolExecutor
@@ -16,6 +16,9 @@ import shutil
 from service.common_downloader import *
 signal.signal(signal.SIGINT, multitasking.killall)
 from Crypto.Util.Padding import pad
+
+
+http = urllib3.PoolManager()
 
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
@@ -101,15 +104,15 @@ class  MP4TSDownloader(CommonDownloader):
                 _headers = headers.copy()
                 _headers['Range'] = f'bytes={start}-{end}'
                 logger.info(f'download bytes={start}-{end} start')
-                response = requests.get(url, headers=_headers)
+                response = http.request("GET", url, headers=_headers)
                 
                 f.seek(start)
-                f.write(response.content)
+                f.write(response.data)
                 
                 logger.info(f'download bytes={start}-{end} success')
                 
                 self.vedioDownLoader.lock.acquire()
-                self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + end - start
+                self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + end - start + 1
                 self.vedioDownLoader.lock.release()
                
 
