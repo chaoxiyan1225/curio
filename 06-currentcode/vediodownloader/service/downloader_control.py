@@ -46,13 +46,13 @@ class  DownloadControl:
         self.download_path = None
         self.downloading = True
         self.lock = threading.Lock()
-
+       
     '''
     初始化函数，创建临时路径等
     '''
     def init(self, savePath):
         logger.warn(f'------downloadContrl init:start-----------')
-
+        
         self.totalMetricInfo = TotalMetricInfo()
     
         if savePath != None and savePath != "":
@@ -120,13 +120,9 @@ class  DownloadControl:
 
         for url in urls:
             count = count + 1
+            self.vedioName = mp4Name
             self.currentDownLoader = self.get_downloader_by_url(url)
-            self.vedioName = mp4Name if mp4Name != None else self.currentDownLoader.gen_vedio_name()
-            
-            logger.warn(f'the download contrl, vedioname {self.vedioName}')
-            
-            self.currentDownLoader.vedioName = self.vedioName
-            
+   
             self.totalMetricInfo.currentUrl = count
             self.totalMetricInfo.totalUrlCnt = len(urls)
             self.currentDownLoader.downLoad_start()

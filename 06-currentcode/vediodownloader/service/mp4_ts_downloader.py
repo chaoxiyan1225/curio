@@ -26,13 +26,22 @@ class  MP4TSDownloader(CommonDownloader):
          super(MP4TSDownloader, self).__init__(savePath, url, vedioName, threadCnt, blockSize)
 
     def init(self):
-        self.gen_vedio_name()
 
         logger.warn(f'------init mp4 ts start-----------')
         
         self.m3u8Urls = set()  # total vedios
         self.mp4Urls = set()   # total vedios
         
+        nameTitle, m3u8s, mp4s = self.gen_VedioInfos()
+        for url in m3u8s:
+            self.m3u8Urls.add(url)
+            
+        for url in mp4s:
+            self.mp4Urls.add(url)
+        
+        
+        if self.vedioName == None:
+           self.vedioName = nameTitle
         
         addPath = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 
@@ -61,7 +70,7 @@ class  MP4TSDownloader(CommonDownloader):
             self.download_path = savePath
 
         def split(self, start: int, end: int, step: int) -> list[tuple[int, int]]:
-            parts = [(start, min(start+step, end))
+            parts = [(start, min(start+step-1, end-1))
                      for start in range(0, end, step)]
             self.vedioDownLoader.lock.acquire()
             self.vedioDownLoader.downTotal = len(parts)
@@ -91,14 +100,16 @@ class  MP4TSDownloader(CommonDownloader):
             def start_download(start: int, end: int) -> None:
                 _headers = headers.copy()
                 _headers['Range'] = f'bytes={start}-{end}'
-                logger.info(f'download bytes={start}-{end}')
-                response = session.get(url, headers=_headers, stream=True)
+                logger.info(f'download bytes={start}-{end} start')
+                response = requests.get(url, headers=_headers)
                 
                 f.seek(start)
                 f.write(response.content)
                 
+                logger.info(f'download bytes={start}-{end} success')
+                
                 self.vedioDownLoader.lock.acquire()
-                self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + chunk_size
+                self.vedioDownLoader.downSuccess = self.vedioDownLoader.downSuccess + end - start
                 self.vedioDownLoader.lock.release()
                
 
@@ -123,7 +134,7 @@ class  MP4TSDownloader(CommonDownloader):
             session = requests.Session()
             each_size = min(each_size, file_size)
             parts = self.split(0, file_size, each_size)
-            logger.warn(f'分块数：{len(parts)}, {parts}')
+            logger.warn(f'共切分数：{len(parts)}, {parts}')
             
             self.vedioDownLoader.downTotal = file_size
          
@@ -191,55 +202,6 @@ class  MP4TSDownloader(CommonDownloader):
         totalCost = (time.time() - start) / 60
         logger.warn(f'下载任务结束，总计下载耗时:%.1f 分钟' % totalCost)
 
-    def parse_subUrls(self, url):
-  
-        logger.warn(f'need parse: {url}')
-        resultM3u8 = set()
-        resultMp4 = set()
-        response = CommonTool.send_getRequest(url)
-        if not response:
-           return None, None
-           
-        soup = BeautifulSoup(response.text,'html.parser')
-       
-        invalidLink1='#'
-        invalidLink2='javascript:void(0)'
-   
-        mycount=0
-        for k in soup.find_all('a'):
-            #logger.warn(k)
-            link=k.get('href')
-            if(link is not None):
-                if link==invalidLink1:
-                    pass
-                elif link==invalidLink2:
-                    pass
-                elif link.find("javascript:")!=-1:
-                    pass
-                else:
-                    mycount=mycount+1
-                if '.m3u8' in link:
-                    resultM3u8.add(link)
-                if '.mp4' in link:
-                    resultMp4.add(link)
-                       
-        # 51网适配        
-        for k in soup.select('div[data-config]'):
-            jsonData = k.get('data-config')
-            if jsonData:
-               m3u8Json = json.loads(jsonData.strip('\t\n'))
-               vedio = m3u8Json['video']
-               if vedio:
-                  url = vedio['url']
-                  if url and  '.m3u8' in url:
-                     resultM3u8.add(url)
-                     
-                  if url and  '.mp4' in url:
-                     resultMp4.add(url)
-                     
-        logger.debug(f'the parse_subUrls {resultMp4}, {resultM3u8}')
-        logger.warn('preparse end......')
-        return resultM3u8, resultMp4
 
     def mp4_download_1By1(self, url, mp4FileName):
         mp4Down = self.Mp4DownLoader(self, self.download_path)
@@ -381,18 +343,6 @@ class  MP4TSDownloader(CommonDownloader):
         elif '.mp4' in url:
             logger.warn(f'原始URL只含一个mp4视频文件{url}')
             self.mp4Urls.add(url)
-        else:
-            logger.warn(f'需要解析含有的视频信息')
-            m3u8Tmps, mp4Tmps = self.parse_subUrls(url)        
-            if len(m3u8Tmps) == 0 and len(mp4Tmps) == 0:
-                logger.warn(f'url{url},无法解析出 m3u8链接或者mp4链接')
-                return
-            
-            for url in m3u8Tmps:
-                self.m3u8Urls.add(url)
-                
-            for url in mp4Tmps:
-                self.mp4Urls.add(url)
 
     def downLoad_start(self):
         self.init()

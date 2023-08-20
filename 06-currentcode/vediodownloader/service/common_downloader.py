@@ -15,15 +15,14 @@ import utils.logger as logger
 signal.signal(signal.SIGINT, multitasking.killall)
 from Crypto.Util.Padding import pad
 
+from utils.commontool import *
+
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 
 default_thread_cnt = 8
 BLOCK_SIZE = 512 * 1024
 RETRY_TIME = 3
-
-headers={
-        'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
 
 MB = 1024**2
 
@@ -56,33 +55,78 @@ class  CommonDownloader(object):
         self.metricInfo = MetricInfo()
 
     def init(self):
-        pass
-
-
-    def gen_vedio_name(self):
+        nameTitle, m3u8s, mp4s = self.gen_VedioInfos()
+        if self.vedioName == None:
+           self.vedioName = nameTitle
+        
+ 
+    def gen_VedioInfos(self):
+    
+        logger.warn(f'需要解析视频名以及含有的视频信息')
         current = 0
         vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
         delay = 5
+        resultM3u8 = set()
+        resultMp4 = set()
+        
         while current < RETRY_TIME:
             try: 
                 current = current + 1
-                response = requests.get(self.url, headers=headers)
+                response = requests.get(self.url, headers=headers, timeout=10)
                 soup = BeautifulSoup(response.text,'html.parser')
+                response.close()
                 pagetitle = soup.find("title")
                 
                 if pagetitle:
                    vedioName = str(pagetitle)[8:40].replace(" ", "")
-                   return vedioName 
-              
+                   
+                invalidLink1='#'
+                invalidLink2='javascript:void(0)'
+           
+                mycount=0
+                for k in soup.find_all('a'):
+                    #logger.warn(k)
+                    link=k.get('href')
+                    if(link is not None):
+                        if link==invalidLink1:
+                            pass
+                        elif link==invalidLink2:
+                            pass
+                        elif link.find("javascript:")!=-1:
+                            pass
+                        else:
+                            mycount=mycount+1
+                        if '.m3u8' in link:
+                            resultM3u8.add(link)
+                        if '.mp4' in link:
+                            resultMp4.add(link)
+                               
+                # 51网适配        
+                for k in soup.select('div[data-config]'):
+                    jsonData = k.get('data-config')
+                    if jsonData:
+                       m3u8Json = json.loads(jsonData.strip('\t\n'))
+                       vedio = m3u8Json['video']
+                       if vedio:
+                          url = vedio['url']
+                          if url and  '.m3u8' in url:
+                             resultM3u8.add(url)
+                             
+                          if url and  '.mp4' in url:
+                             resultMp4.add(url)
+                             
+                logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
+                return vedioName, resultM3u8, resultMp4
+     
             except Exception as e:
-                logger.error(f" parse title error, {self.url} {e}".encode("utf-8"))
+                logger.error(f" parse vedioinfo error, {self.url} {e}".encode("utf-8"))
                 logging.exception(e)
                 time.sleep(delay)
                 delay *= 2
-
-        return vedioName
-            
-
+                
+        logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
+        return vedioName, resultM3u8, resultMp4
+        
     def get_percent_current(self):
         pass
   

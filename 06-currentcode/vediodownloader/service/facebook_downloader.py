@@ -12,8 +12,6 @@ class FacebookDownloader(CommonDownloader):
     def __init__(self, savePath, url, vedioName=None, threadCnt = default_thread_cnt, blockSize = BLOCK_SIZE):
          super(FacebookDownloader, self).__init__(savePath, url, vedioName, threadCnt, blockSize)
 
-    def init(self):
-        self.gen_vedio_name()
 
     def clear(self):
         return
