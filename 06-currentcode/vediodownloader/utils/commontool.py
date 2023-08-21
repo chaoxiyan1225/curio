@@ -1,4 +1,33 @@
 #coding=utf8
+import sys, os, time
+import requests, json
+import urllib.request
+import ssl
+import uuid
+import base64 
+from Crypto.Cipher import AES
+
+# smtplib 用于邮件的发信动作
+import smtplib
+# email 用于构建邮件内容
+from email.mime.text import MIMEText
+# 构建邮件头
+from email.header import Header
+import conf.systemconf as SystemConf
+import re
+import utils.logger as logger
+
+last_time = 0
+zip_data = None
+
+iv =  '5947814788888888'
+default_key = 'vedioprocesskey6'
+data = 'hello world'
+
+
+
+
+#coding=utf8
 import sys, os, time,random
 import requests, json
 import urllib.request
@@ -111,6 +140,39 @@ headers_list = [
 ]
 
 headers = random.choice(headers_list)
+
+SESSION_TIMEOUT = 5 * 60
+
+def get_conf_data():
+    current = time.time() 
+    global zip_data
+    global last_time
+    if current - last_time < SESSION_TIMEOUT and zip_data == None:
+          return zip_data
+            
+    current = 0
+    delay = 5
+    while current < RETRY_TIME:
+        try: 
+            current = current + 1
+            ssl._create_default_https_context = ssl._create_unverified_context
+            headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
+            req = urllib.request.Request(SystemConf.projectZip, headers=headers)
+
+            userRead = urllib.request.urlopen(req, timeout=6)
+            data = userRead.read()
+            zip_data = data
+            last_time = time.time()
+
+            return zip_data
+          
+        except Exception as e:
+            logger.error(f" send request error, {SystemConf.projectZip} {e}".encode("utf-8"))
+            logging.exception(e)
+            time.sleep(delay)
+            delay *= 2
+
+    return None
 
 def picToPythonFile(picture_names, path ,py_name):
     """
