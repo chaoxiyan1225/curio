@@ -81,6 +81,8 @@ class App(customtkinter.CTk):
         self.navigation_frame_label.grid(row=0, column=0, padx=20, pady=20)
         self.download_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="DownLoad", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.download_img, anchor="w", command=self.download_button_event)
         self.download_button.grid(row=1, column=0, sticky="ew")
+        self.shares_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Shares", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.shares_button_event)
+        self.shares_button.grid(row=2, column=0, sticky = "ew")
         self.register_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Register", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.register_img, anchor="w", command=self.register_button_event)
         self.register_button.grid(row=3, column=0, sticky="ew")
         self.aboutus_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="AboutUs", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.aboutus_img, anchor="w", command=self.aboutus_button_event)
@@ -88,7 +90,6 @@ class App(customtkinter.CTk):
         self.language_label =  customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=30, border_spacing=10, text="Language Select:", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), anchor="w")
         self.language_label.grid(row=7, column=0, padx=20, pady=(10, 0) )
         self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame, values=["中文", "English", "Spnish"], command=self.change_language_event)
-        
         self.language_optionemenu.grid(row=8, column=0, padx=(0,20), pady=(0, 10))
 
         # download frame
@@ -102,8 +103,8 @@ class App(customtkinter.CTk):
                                                       anchor="w")
         self.info_label.grid(row=1, column=0, padx=(20,0), pady=(0,0))
 
-        self.shares_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text="获取网址", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.shares_button_event)
-        self.shares_button.grid(row=1, column=15, columnspan = 1)
+        self.more_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text="获取网址", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.more_button_event)
+        self.more_button.grid(row=1, column=15, columnspan = 1)
     
         self.add_button =  customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15,text="", fg_color="transparent",hover_color=("gray70", "gray30"), image=self.add_img, command=self.add_new)
         self.add_button.grid(row=2, column=0,padx=(0,0), columnspan=1, pady=(0, 0))
@@ -187,8 +188,8 @@ class App(customtkinter.CTk):
         self.select_frame_by_name("download")
         self.change_appearance_mode_event("light")
 
-        #t = threading.Thread(target=self.async_load_urls)
-        #t.start()
+        t = threading.Thread(target=self.async_load_urls)
+        t.start()
 
     def select_frame_by_name(self, name):
         # set button color for selected button
@@ -234,12 +235,15 @@ class App(customtkinter.CTk):
         webbrowser.open('https://chaoxiyan1225.github.io/aboutme')
 
     # to aboutus page view 
-    def shares_button_event(self):
+    def more_button_event(self):
         webbrowser.open('https://chaoxiyan1225.github.io/shareurls')
 
     # to aboutus page view 
     def vip_button_event(self):
         webbrowser.open('https://chaoxiyan1225.github.io/business')
+
+    def for_more_url(self, url):
+        webbrowser.open(url)
 
     def change_appearance_mode_event(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -369,7 +373,6 @@ class App(customtkinter.CTk):
         self.save_entry.delete(0, 10000)
         self.save_entry.insert(0,filePath)
         self.save_entry.configure(fg_color="white") 
-        
     
     def parse_allUrls(self):
        urls = []
@@ -470,27 +473,43 @@ class App(customtkinter.CTk):
         
         self.progress_label.configure(text=info)
         
-    
-    '''
+
     def async_load_urls(self):
         table = []
         row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
-        for r in range(4):
-            for c in range(4):
-                widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="Language Select:",
-                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                      anchor="w")
+        
+        remoteUrls = self.sysCtrl.getAllUrlsArray()
+        urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
+        field = []
+        print(len(urls))
+        for r in range(len(urls)):
+            attrs = vars(urls[r])
+            c = 0 
+            tmpUrl = ''
+            for attr, value in attrs.items():
+                #if r == 0:
+                #   field.append(attr)
+                if attr == 'url':
+                    tmpUrl = value
+                widget =  customtkinter.CTkLabel(self.shares_frame, corner_radius=0, height=30,  text=f"{value}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
                 widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
-                row.append(widget)    #把每次创建的Entry对象添加到row列表里
-            table.append(row)       #把row列表添加到table列表里，使table成为一个二维列表。
+                c = c + 1
+                row.append(widget)
+
+            
+            widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="点击详情",command=lambda: self.for_more_url(tmpUrl) ,
+                                                      fg_color="transparent", text_color=("green", "green"), hover_color=("gray70", "gray30"),
+                                                      anchor="w")
+            widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
+            row.append(widget)
+
+            table.append(row)    
         
         ##加个表头试一下
-        field = ['url','suggest','website', 'suggest']
         for t in field:
             table[0][field.index(t)].configure(
                             textvariable=customtkinter.StringVar(value=t)
                             )
-    '''    
        
        
 if __name__ == "__main__":
@@ -498,3 +517,13 @@ if __name__ == "__main__":
     app.mainloop()
     #CommonTool.convert_pathPic_pyFile("imgs", "pictures_v3")
 
+        # remoteUrls = SoftWareContrl().getAllUrlsArray()
+        # urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
+
+        # print(urls)
+        # field = []
+        # c = 0 
+        # for r in range(len(urls)):
+        #     attrs = vars(urls[r])
+        #     for attr, value in attrs.items():
+        #         print(f'{attr}, {value}')
