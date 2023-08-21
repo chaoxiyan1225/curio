@@ -11,7 +11,8 @@ from zipfile import ZipFile
 import time
 import conf.systemconf as SystemConf
 import conf.errors as Errors
-
+import utils.commontool as CommonTool
+ 
 from utils.logger import *
 
 def ParseJsonToObj(parseData, yourCls):
@@ -33,38 +34,25 @@ class SofeWareInfo:
       s = json.dumps(self.__dict__) 
       return s
 
-
-class VedioUrl:
-
-   def __init__(self, id = '', name = '', descript = ''):
-      self.id = id 
-      self.name = name
-      self.descript = descript
-
-   def toString(self):
-      s = json.dumps(self.__dict__)
-      return s
-
 class SoftWareContrl:
 
    def getAllUrlsArray(self):
 
       urlConf, code = self.loadAdviceUrlsFromGit()
       if code != Errors.SUCCESS:
-         return None, code
+         return None
 
       canShow = urlConf['canShow']
 
       if not canShow or (canShow.lower() != 'true'):
-         return None, Errors.S_NoAdviceUrl
+         return None
       
-      
-      urlsSet = set()
+      urls = []
       for o in urlConf['urls']:
-         tmpUrl = ParseJsonToObj(o, VedioUrl)
-         urlsSet.add(tmpUrl)
+         tmpUrl = ParseJsonToObj(o, SystemConf.VedioUrl)
+         urls.append(tmpUrl)
 
-      return urlsSet, Errors.SUCCESS
+      return urls
 
    def loadAdviceUrlsFromGit(self, adviceUrlsConf = SystemConf.adviceurlConf, projectZip = SystemConf.projectZip):
        return self.loadJsonConfFromGit(adviceUrlsConf, projectZip)
@@ -75,13 +63,11 @@ class SoftWareContrl:
    def loadJsonConfFromGit(self, confFileName, gitZipFileName, jsonObject = None):
 
        try:
-          ssl._create_default_https_context = ssl._create_unverified_context
-          headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
-          req = urllib.request.Request(gitZipFileName,headers=headers)
-          
-          #logger.warn(f'logger.warn headers {headers}')
-          userRead = urllib.request.urlopen(req, timeout=6)
-          data = userRead.read()
+         
+          data = CommonTool.get_conf_data()
+          if data == None:
+             return None, Errors.S_DownLoadError
+
           #logger.warn(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
@@ -114,7 +100,6 @@ class SoftWareContrl:
              else:
                 return confJson, Errors.SUCCESS
              
-          return None, Errors.S_ParseFail
        except Exception as e:
              logger.warn(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              return None, Errors.S_ParseFail
