@@ -61,20 +61,15 @@ class UserContrl:
    def getUserConfFromGit(self, userId :str, projectZip = SystemConf.projectZip):
        
        try:
-          ssl._create_default_https_context = ssl._create_unverified_context
-          headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
-          req = urllib.request.Request(SystemConf.projectZip, headers=headers)
+          data = CommonTool.get_conf_data()
+          if data == None:
+             return None, Errors.S_DownLoadError
           
-          #logger.warn(f'logger.warn headers {headers}')
-          userRead = urllib.request.urlopen(req, timeout=6)
-          data = userRead.read()
           #logger.warn(f'data : {data}')
           zipFile = ZipFile(BytesIO(data))
           files = zipFile.namelist()         
           if not len(files):
              logger.warn(f'down load conf error!')
-
-             status = ""
              return None, Errors.S_DownLoadError
 
           userConfFile = None
