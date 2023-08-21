@@ -16,9 +16,9 @@ import shutil
 from service.common_downloader import *
 signal.signal(signal.SIGINT, multitasking.killall)
 from Crypto.Util.Padding import pad
+#import pycurl
 
-
-http = urllib3.PoolManager()
+http = urllib3.PoolManager(block=True)
 
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
@@ -55,6 +55,7 @@ class  MP4TSDownloader(CommonDownloader):
 
     def get_percent_current(self):
         fenMu = 1000000 if self.downTotal==0 else self.downTotal
+        #self.downSuccess = self.curlDownloader.getinfo(self.curlDownloader.SIZE_DOWNLOAD)  #下载数据包的大小
         return int((self.downSuccess * 100) / fenMu)
   
     def get_metric(self):
@@ -71,6 +72,7 @@ class  MP4TSDownloader(CommonDownloader):
             self.vedioDownLoader.downTotal = 0
             self.vedioDownLoader.lock.release()
             self.download_path = savePath
+            #self.curlDownloader = None
 
         def split(self, start: int, end: int, step: int) -> list[tuple[int, int]]:
             parts = [(start, min(start+step-1, end-1))
@@ -90,6 +92,24 @@ class  MP4TSDownloader(CommonDownloader):
                     raise ValueError('该文件不支持多线程分段下载！')
                 return file_size
             return int(file_size)
+        
+        '''        
+        def curl_download(self, url:str, file_name:str, retry_times: int=3)->None:
+            self.downTotal = self.get_file_size(url)
+            
+            self.curlDownloader = pycurl.Curl()
+            self.curlDownloader.setopt(pycurl.URL,URL)  #定义请求的URL常量
+            self.curlDownloader.setopt(pycurl.CONNECTTIMEOUT,10)  #定义请求连接的等待时间
+            self.curlDownloader.setopt(pycurl.TIMEOUT,10)   #定义请求超时时间
+            self.curlDownloader.setopt(pycurl.NOPROGRESS,1)  #屏蔽下载进度条
+            self.curlDownloader.setopt(pycurl.MAXREDIRS,1)  #指定HTTP重定向的最大数为1
+            self.curlDownloader.setopt(pycurl.FORBID_REUSE,1)  #完成交互后强制断开连接，不重用
+            self.curlDownloader.setopt(pycurl.DNS_CACHE_TIMEOUT,30)  #设置保存DNS信息的时间为30秒
+
+            #创建一个文件对象，以“wb”方式打开，用来存储返回的http头部及页面的内容
+            indexfile = open(file_name,"wb")
+            self.curlDownloader.setopt(pycurl.WRITEDATA,indexfile)    #将返回的HTML内容定向到indexfile文件
+         '''
 
         def download(self, url: str, file_name: str, retry_times: int = 3, each_size=2*MB) -> None:
             mp4Name = os.path.join(self.download_path, file_name + ".mp4")

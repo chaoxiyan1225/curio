@@ -108,13 +108,13 @@ class  CommonDownloader(object):
                             resultMp4.add(link)
    
                 if len(resultM3u8) == 0 and len(resultMp4) == 0: 
-                    r=r"'(http.*\\.mp4?*)'"  
+                    r=r'/http.*\.(mp4|mp4\?.*)' 
                     re_mp4=re.compile(r)  
                     mp4List=re.findall(re_mp4, response.text)  
                     for url in mp4List:  
                        resultMp4.add(url)
-                       
-                    r=r"'(http.*\\.m3u8?*)'"  
+                      
+                    r=r'/http.*\.(m3u8|m3u8\?.*)'
                     re_m3u8=re.compile(r)  
                     m3u8List=re.findall(re_m3u8, response.text)  
                     for url in m3u8List:  
