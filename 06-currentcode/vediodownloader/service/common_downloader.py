@@ -60,11 +60,69 @@ class  CommonDownloader(object):
         nameTitle, m3u8s, mp4s = self.gen_VedioInfos()
         if self.vedioName == None:
            self.vedioName = nameTitle
-        
- 
-    def gen_VedioInfos(self):
+
     
-        logger.warn(f'需要解析视频名以及含有的视频信息')
+    def __split__(self, strList:list, step: int = 200):
+        retList = [strList[start:min(start+step, len(strList) - 1)]
+                for start in range(0, len(strList) - 1, step)]
+        return retList
+
+    def gen_vedioInfos_v1(self):
+
+        logger.warn(f'now need to parse vedio info')
+        current = 0
+        vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
+        delay = 5
+        resultM3u8 = set()
+        resultMp4 = set()
+
+        @multitasking.task
+        def sub_match(strArr:list) -> None:
+            r=r'https?://.*\.(mp4|(mp4\?.*))' 
+            r2=r'https?://.*\.(m3u8|(m3u8\?.*))' 
+            re_mp4=re.compile(r)  
+            re_m3u8 = re.compile(r2)
+            for c in strArr: 
+                if re.match(re_mp4, c): 
+                    resultMp4.add(c)
+
+                if re.match(re_m3u8, c):
+                    resultM3u8.add(c)
+
+        while current < RETRY_TIME:
+            try: 
+                current = current + 1
+                response = requests.get(self.url, headers=headers, timeout=15)
+                soup = BeautifulSoup(response.text,'html.parser')
+                content = response.text
+                response.close()
+                pagetitle = soup.find("title")
+                
+                if pagetitle:
+                   vedioName = str(pagetitle)[8:40].replace(" ", "")
+                   for char in vedioName:
+                        if char in sets:
+                            vedioName = vedioName.replace(char, '')
+
+                ct_arr = content.split("\"")
+                strArrs = self.split(ct_arr)
+
+                for arr in strArrs:
+                    sub_match(arr)
+                
+                multitasking.wait_for_tasks()
+                break
+
+            except Exception as e:
+                logging.exception(e)
+                time.sleep(delay)
+                delay *= 2
+                
+        return vedioName, resultM3u8, resultMp4
+
+    def gen_vedioInfos_v2(self):
+    
+        logger.warn(f'need to parse vedio info')
         current = 0
         vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
         delay = 5
@@ -120,8 +178,7 @@ class  CommonDownloader(object):
                     for url in m3u8List:  
                        resultM3u8.add(url)
                    
-                if  len(resultM3u8) == 0 and len(resultMp4) == 0:     
-                    # 51网适配        
+                if  len(resultM3u8) == 0 and len(resultMp4) == 0:      
                     for k in soup.select('div[data-config]'):
                         jsonData = k.get('data-config')
                         if jsonData:
@@ -153,7 +210,6 @@ class  CommonDownloader(object):
     def get_metric(self):
         self.metricInfo.percentCurrent = self.get_percent_current()
         return self.metricInfo    
-
 
     def map_download_task(self, urlList):
         useThreadCnt = len(urlList) if self.threadCnt > len(urlList) else self.threadCnt
