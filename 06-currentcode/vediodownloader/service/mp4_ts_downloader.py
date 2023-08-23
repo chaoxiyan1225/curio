@@ -35,7 +35,7 @@ class  MP4TSDownloader(CommonDownloader):
         self.m3u8Urls = set()  # total vedios
         self.mp4Urls = set()   # total vedios
         
-        nameTitle, m3u8s, mp4s = self.gen_VedioInfos()
+        nameTitle, m3u8s, mp4s = self.gen_vedioInfos_v1()
         for url in m3u8s:
             self.m3u8Urls.add(url)
             
@@ -111,10 +111,14 @@ class  MP4TSDownloader(CommonDownloader):
             self.curlDownloader.setopt(pycurl.WRITEDATA,indexfile)    #将返回的HTML内容定向到indexfile文件
          '''
 
-        def download(self, url: str, file_name: str, retry_times: int = 3, each_size=2*MB) -> None:
+        def download(self, url: str, file_name: str, retry_times: int = 3, each_size=2*MB):
             mp4Name = os.path.join(self.download_path, file_name + ".mp4")
             f = open(mp4Name, 'ab')
             file_size = self.get_file_size(url)
+            
+            if file_size < 1*MB:
+                logger.warn(f'the url:{url} may be ads vedio size :{file_size}')
+                return "adsVedio"
             
             logger.warn(f'the file_size:{file_size}')
 
@@ -168,6 +172,8 @@ class  MP4TSDownloader(CommonDownloader):
           
             multitasking.wait_for_tasks()
             f.close()
+            
+            return "success"
             ##bar.close()
 
     def download_tsFiles(self, urlList: list, retry_times: int = 3) -> None:
@@ -228,7 +234,7 @@ class  MP4TSDownloader(CommonDownloader):
 
     def mp4_download_1By1(self, url, mp4FileName):
         mp4Down = self.Mp4DownLoader(self, self.download_path)
-        mp4Down.download(url, mp4FileName)
+        return mp4Down.download(url, mp4FileName)
 
     
     def ts_download_1By1(self, url, mp4Name):
@@ -375,7 +381,7 @@ class  MP4TSDownloader(CommonDownloader):
         self.parse_all_vedios(self.url)
         self.metricInfo.totalVedioCnt = len(self.m3u8Urls) + len(self.mp4Urls)
            
-        logger.warn(f'the url:{self.url},共含m3u8文件{len(self.m3u8Urls)}, mp4的文件个数{len(self.mp4Urls)}, the vedioname: {self.vedioName}')
+        logger.warn(f'the url:{self.url} m3u8 cnt:{len(self.m3u8Urls)}, mp4 cnt:{len(self.mp4Urls)}, the vedioname: {self.vedioName}')
         
         logger.debug(f'the m3u8urls:{self.m3u8Urls}')
         logger.debug(f'the mp4ulrs:{self.mp4Urls}')        
@@ -396,12 +402,14 @@ class  MP4TSDownloader(CommonDownloader):
             self.downSuccess = 0 
             self.downTotal = 0
             count = count + 1
-            self.mp4_download_1By1(mp4Url, f'{self.vedioName}_{count}')   
+            result = self.mp4_download_1By1(mp4Url, f'{self.vedioName}_{count}')  
+            time.sleep(15)            
 
             if self.downSuccess != self.downTotal:
                self.metricInfo.failVedioCnt = self.metricInfo.failVedioCnt + 1
-            else:
-               self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
+            else: 
+               if self.downTotal != 0:
+                  self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
 
         self.clear()
         return True

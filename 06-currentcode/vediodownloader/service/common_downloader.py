@@ -57,7 +57,7 @@ class  CommonDownloader(object):
         self.metricInfo = MetricInfo()
 
     def init(self):
-        nameTitle, m3u8s, mp4s = self.gen_VedioInfos()
+        nameTitle, m3u8s, mp4s = self.gen_vedioInfos_v1()
         if self.vedioName == None:
            self.vedioName = nameTitle
 
@@ -69,7 +69,7 @@ class  CommonDownloader(object):
 
     def gen_vedioInfos_v1(self):
 
-        logger.warn(f'now need to parse vedio info')
+        logger.warn(f'now need to parse vedio info v1')
         current = 0
         vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
         delay = 5
@@ -83,6 +83,9 @@ class  CommonDownloader(object):
             re_mp4=re.compile(r)  
             re_m3u8 = re.compile(r2)
             for c in strArr: 
+                if not c.startswith("http"):
+                   continue
+                
                 if re.match(re_mp4, c): 
                     resultMp4.add(c)
 
@@ -99,13 +102,14 @@ class  CommonDownloader(object):
                 pagetitle = soup.find("title")
                 
                 if pagetitle:
-                   vedioName = str(pagetitle)[8:40].replace(" ", "")
+                   vedioName = str(pagetitle)[8:36].replace(" ", "")
                    for char in vedioName:
                         if char in sets:
                             vedioName = vedioName.replace(char, '')
-
-                ct_arr = content.split("\"")
-                strArrs = self.split(ct_arr)
+                            
+                p = re.compile("[\n\"']")
+                ct_arr = p.split(content)
+                strArrs = self.__split__(ct_arr)
 
                 for arr in strArrs:
                     sub_match(arr)
