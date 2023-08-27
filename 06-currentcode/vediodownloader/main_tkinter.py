@@ -16,6 +16,7 @@ import utils.logger as logger
 import conf.errors as Errors
 from io import BytesIO
 from conf.pictures_v3 import *
+import requests
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
@@ -481,35 +482,38 @@ class App(customtkinter.CTk):
         remoteUrls = self.sysCtrl.getAllUrlsArray()
         urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
         field = []
-        print(len(urls))
+        rNum = 0
         for r in range(len(urls)):
-            attrs = vars(urls[r])
-            c = 0 
-            tmpUrl = ''
-            for attr, value in attrs.items():
-                #if r == 0:
-                #   field.append(attr)
-                if attr == 'url':
-                    tmpUrl = value
-                widget =  customtkinter.CTkLabel(self.shares_frame, corner_radius=0, height=30,  text=f"{value}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
-                widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
-                c = c + 1
-                row.append(widget)
+            urlInfo = urls[r]
+        
+            res=requests.get(urlInfo.logo)
+            with open("tmplogo" ,'wb') as f:
+                f.write(res.content)
+                
+            tmp_img = customtkinter.CTkImage(light_image=Image.open("tmplogo"),dark_image=Image.open("tmplogo"), size=(PIC_SIZE, PIC_SIZE))
+                        
+            tmp_button = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=40, border_spacing=10, text=urlInfo.name, fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=tmp_img, anchor="w", command=lambda: self.for_more_url(urlInfo.url))
+            
+            tmp_button.grid(row=rNum,column=r%3, padx=20, pady=20) 
+            logger.warn(f'the row {rNum}, column:{r%3}')
+            row.append(tmp_button)
+                
+            if r % 3 ==0 and r > 0:
+               table.append(row)
+               rNum = rNum + 1               
 
             
-            widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="点击详情",command=lambda: self.for_more_url(tmpUrl) ,
-                                                      fg_color="transparent", text_color=("green", "green"), hover_color=("gray70", "gray30"),
-                                                      anchor="w")
-            widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew")
-            row.append(widget)
-
-            table.append(row)    
+            #widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="点击详情",command=lambda: self.for_more_url(tmpUrl) ,
+            #                                          fg_color="transparent", text_color=("green", "green"), hover_color=("gray70", "gray30"),
+            #                                          anchor="w")
+                                                      
+            #widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew") 
         
         ##加个表头试一下
-        for t in field:
-            table[0][field.index(t)].configure(
-                            textvariable=customtkinter.StringVar(value=t)
-                            )
+        #for t in field:
+        #    table[0][field.index(t)].configure(
+        #                    textvariable=customtkinter.StringVar(value=t)
+        #                    )
        
        
 if __name__ == "__main__":

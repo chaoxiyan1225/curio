@@ -159,7 +159,7 @@ def get_conf_data():
             headers={'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
             req = urllib.request.Request(SystemConf.projectZip, headers=headers)
 
-            userRead = urllib.request.urlopen(req, timeout=6)
+            userRead = urllib.request.urlopen(req, timeout=15)
             data = userRead.read()
             zip_data = data
             last_time = time.time()

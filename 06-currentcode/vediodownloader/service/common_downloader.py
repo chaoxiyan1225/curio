@@ -66,16 +66,11 @@ class  CommonDownloader(object):
         retList = [strList[start:min(start+step, len(strList) - 1)]
                 for start in range(0, len(strList) - 1, step)]
         return retList
-
-    def gen_vedioInfos_v1(self):
-
-        logger.warn(f'now need to parse vedio info v1')
-        current = 0
-        vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
-        delay = 5
-        resultM3u8 = set()
-        resultMp4 = set()
-
+        
+        
+    def __regMatch_vedioInfos__(self, content, resultM3u8, resultMp4):
+        logger.warn(f'now need to regmatch ')
+        
         @multitasking.task
         def sub_match(strArr:list) -> None:
             r=r'https?://.*\.(mp4|(mp4\?.*))' 
@@ -91,40 +86,19 @@ class  CommonDownloader(object):
 
                 if re.match(re_m3u8, c):
                     resultM3u8.add(c)
+                    
+        p = re.compile("[\n\"']")
+        ct_arr = p.split(content)
+        strArrs = self.__split__(ct_arr)
 
-        while current < RETRY_TIME:
-            try: 
-                current = current + 1
-                response = requests.get(self.url, headers=headers, timeout=15)
-                soup = BeautifulSoup(response.text,'html.parser')
-                content = response.text
-                response.close()
-                pagetitle = soup.find("title")
-                
-                if pagetitle:
-                   vedioName = str(pagetitle)[8:36].replace(" ", "")
-                   for char in vedioName:
-                        if char in sets:
-                            vedioName = vedioName.replace(char, '')
-                            
-                p = re.compile("[\n\"']")
-                ct_arr = p.split(content)
-                strArrs = self.__split__(ct_arr)
+        for arr in strArrs:
+            sub_match(arr)
+        
+        multitasking.wait_for_tasks()
+        
+        logger.warn(f'the regmatch: {resultMp4}, {resultM3u8}')
 
-                for arr in strArrs:
-                    sub_match(arr)
-                
-                multitasking.wait_for_tasks()
-                break
-
-            except Exception as e:
-                logging.exception(e)
-                time.sleep(delay)
-                delay *= 2
-                
-        return vedioName, resultM3u8, resultMp4
-
-    def gen_vedioInfos_v2(self):
+    def gen_vedioInfos_v1(self):
     
         logger.warn(f'need to parse vedio info')
         current = 0
@@ -138,6 +112,7 @@ class  CommonDownloader(object):
                 current = current + 1
                 response = requests.get(self.url, headers=headers, timeout=15)
                 soup = BeautifulSoup(response.text,'html.parser')
+                content = response.text
 
                 response.close()
                 pagetitle = soup.find("title")
@@ -169,32 +144,23 @@ class  CommonDownloader(object):
                         if '.mp4' in link:
                             resultMp4.add(link)
    
-                if len(resultM3u8) == 0 and len(resultMp4) == 0: 
-                    r=r'/http.*\.(mp4|mp4\?.*)' 
-                    re_mp4=re.compile(r)  
-                    mp4List=re.findall(re_mp4, response.text)  
-                    for url in mp4List:  
-                       resultMp4.add(url)
-                      
-                    r=r'/http.*\.(m3u8|m3u8\?.*)'
-                    re_m3u8=re.compile(r)  
-                    m3u8List=re.findall(re_m3u8, response.text)  
-                    for url in m3u8List:  
-                       resultM3u8.add(url)
-                   
-                if  len(resultM3u8) == 0 and len(resultMp4) == 0:      
-                    for k in soup.select('div[data-config]'):
+                if len(resultM3u8) == 0 and len(resultMp4) == 0:      
+                   for k in soup.select('div[data-config]'):
                         jsonData = k.get('data-config')
                         if jsonData:
                            m3u8Json = json.loads(jsonData.strip('\t\n'))
                            vedio = m3u8Json['video']
                            if vedio:
                               url = vedio['url']
-                              if url and  '.m3u8' in url:
+                              if url and '.m3u8' in url:
                                  resultM3u8.add(url)
                                  
-                              if url and  '.mp4' in url:
+                              if url and '.mp4' in url:
                                  resultMp4.add(url)
+                                 
+                if len(resultM3u8) == 0 and len(resultMp4) ==0:
+                  self.__regMatch_vedioInfos__(content, resultM3u8, resultMp4)
+                   
                              
                 logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
                 return vedioName, resultM3u8, resultMp4

@@ -8,6 +8,8 @@ from tqdm import tqdm # 用于显示进度条
 import multitasking, threading # 用于多线程操作
 from retry import retry# 导入 retry 库以方便进行下载出错重试
 from bs4 import BeautifulSoup
+from requests.auth import HTTPBasicAuth
+
 
 import utils.logger as logger
 import utils.commontool as CommonTool
@@ -45,11 +47,6 @@ class  MP4TSDownloader(CommonDownloader):
         
         if self.vedioName == None:
            self.vedioName = nameTitle
-        
-        addPath = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                
-        self.download_ts = os.path.join(self.download_path, f"tsfile_{addPath}")
-        os.mkdir(self.download_ts)
         logger.warn(f'------init mp4 ts end-----------')
 
 
@@ -85,32 +82,15 @@ class  MP4TSDownloader(CommonDownloader):
         def get_file_size(self, url: str, raise_error: bool = False) -> int:
         
             logger.warn(f'the vedio url {url}')
-            response = requests.head(url)
+            response = requests.head(url,auth=HTTPBasicAuth("youporntbag", "ycx/8520/8520-+"))
+            logger.warn(f'the response:{response.text}')
             file_size = response.headers.get('Content-Length')
             if file_size is None:
                 if raise_error is True:
                     raise ValueError('该文件不支持多线程分段下载！')
                 return file_size
             return int(file_size)
-        
-        '''        
-        def curl_download(self, url:str, file_name:str, retry_times: int=3)->None:
-            self.downTotal = self.get_file_size(url)
-            
-            self.curlDownloader = pycurl.Curl()
-            self.curlDownloader.setopt(pycurl.URL,URL)  #定义请求的URL常量
-            self.curlDownloader.setopt(pycurl.CONNECTTIMEOUT,10)  #定义请求连接的等待时间
-            self.curlDownloader.setopt(pycurl.TIMEOUT,10)   #定义请求超时时间
-            self.curlDownloader.setopt(pycurl.NOPROGRESS,1)  #屏蔽下载进度条
-            self.curlDownloader.setopt(pycurl.MAXREDIRS,1)  #指定HTTP重定向的最大数为1
-            self.curlDownloader.setopt(pycurl.FORBID_REUSE,1)  #完成交互后强制断开连接，不重用
-            self.curlDownloader.setopt(pycurl.DNS_CACHE_TIMEOUT,30)  #设置保存DNS信息的时间为30秒
-
-            #创建一个文件对象，以“wb”方式打开，用来存储返回的http头部及页面的内容
-            indexfile = open(file_name,"wb")
-            self.curlDownloader.setopt(pycurl.WRITEDATA,indexfile)    #将返回的HTML内容定向到indexfile文件
-         '''
-
+       
         def download(self, url: str, file_name: str, retry_times: int = 3, each_size=2*MB):
             mp4Name = os.path.join(self.download_path, file_name + ".mp4")
             f = open(mp4Name, 'ab')
@@ -180,7 +160,7 @@ class  MP4TSDownloader(CommonDownloader):
 
         logger.warn(f'一共待下载的ts文件数：{len(urlList)}')
         self.downTotal = len(urlList)
-        
+       
         start = time.time()
         #先把任务分组
         useThreadCnt, totalFileCnt, taskList = self.map_download_task(urlList)
@@ -238,9 +218,14 @@ class  MP4TSDownloader(CommonDownloader):
 
     
     def ts_download_1By1(self, url, mp4Name):
+    
+        addPath = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                
+        self.download_ts = os.path.join(self.download_path, f"tsfile_{addPath}")
+        os.mkdir(self.download_ts)
         
         all_content = requests.get(url, headers = headers).text
-        m3u8File = self.download_path + "\site.m3u8"
+        m3u8File = self.download_ts + f"\site.m3u8" 
         logger.warn(f'm3u8save path: {m3u8File}')
         
         with open(m3u8File, "wb") as file:
@@ -277,7 +262,7 @@ class  MP4TSDownloader(CommonDownloader):
                 allTsFiles.append(pd_url)
 
         if unknow:
-            logger.error('未来找到对于的TS文件URL，程序异常')
+            logger.error('not find ts ，程序异常')
 
         else:
             logger.warn("ts文件的URL解析完成")
@@ -286,7 +271,8 @@ class  MP4TSDownloader(CommonDownloader):
         self.download_tsFiles(allTsFiles, 3)
         
         #把 TS files 合并为一个mp4文件
-        self.merge_ts_2_mp4(mp4Name)
+        if len(allTsFiles) > 0:
+           self.merge_ts_2_mp4(mp4Name)
          
     
     def merge_file(self, tsPath):
@@ -298,39 +284,24 @@ class  MP4TSDownloader(CommonDownloader):
         os.rename("new.tmp", "new.mp4")
         
     def merge_ts_2_mp4(self, mp4FileName:str)->None:
-
-        '''
-        把单个ts文件顺序写入到 mp4 文件中
-        '''
         def ts2MP4(tsPath:str, mp4FileName:str)->bool:
             if not tsPath or not mp4FileName:
                 return False  
 
             with open(tsPath, "rb") as tsf:
-                '''
-                while True:
-                    buffer = tsf.read(BLOCK_SIZE)
-                    if not buffer:
-                      break
-                      
-                    mp4f.write(buffer)
-                    mp4f.flush()
-                '''
                 mp4f.write(tsf.read())
                 ##bar.update(1)#更新进度条
                
             return True
             
-        #列举所有的ts文件，按文件标号排序，非字典序
         fs = os.listdir(self.download_ts)
         fs.sort(key= lambda x:int(x[:-3]))
         
-        logger.warn(f'开始转为mp4，待转换TS文件数量：{len(fs)}')
+        logger.warn(f'compaction to mp4，TS cnt：{len(fs)}')
         
         mp4Name = os.path.join(self.download_path, mp4FileName + ".mp4")
         mp4f = open(mp4Name, "ab")
         
-        # 创建进度条
         ##bar = tqdm(total=len(fs), desc=f'需转换的ts文件数：{len(fs)}')
         for f in fs:
             tmp = os.path.join(self.download_ts, f)
@@ -340,14 +311,14 @@ class  MP4TSDownloader(CommonDownloader):
                   logger.error("ts2MP4 fail, filename:", tmp)
                   continue
             else:
-               logger.warn('其他情况')
+               logger.warn('other error')
                
         mp4f.close()
         ##bar.close()
         os.chdir(self.download_ts)
         os.system('del /Q *.ts')
         
-        logger.warn('转换结束')
+        logger.warn('compaction to mp4 finished')
         time.sleep(4)
         
         father = os.path.join(self.download_ts, os.pardir)
@@ -367,10 +338,10 @@ class  MP4TSDownloader(CommonDownloader):
             return 
         
         if '.m3u8' in url:
-            logger.warn(f'原始URL只含一个视频文件{url}')
+            logger.warn(f'input:{url} only one m3u8 file')
             self.m3u8Urls.add(url)
         elif '.mp4' in url:
-            logger.warn(f'原始URL只含一个mp4视频文件{url}')
+            logger.warn(f'input:{url} only one mp4 file')
             self.mp4Urls.add(url)
 
     def downLoad_start(self):
@@ -392,6 +363,8 @@ class  MP4TSDownloader(CommonDownloader):
             self.downTotal = 0
             count = count + 1
             self.ts_download_1By1(m3u8Url, f'{self.vedioName}_{count}')
+            time.sleep(15)  
+            self.clear()
             
             if self.downSuccess != self.downTotal:
                self.metricInfo.failVedioCnt = self.metricInfo.failVedioCnt + 1 
@@ -411,7 +384,7 @@ class  MP4TSDownloader(CommonDownloader):
                if self.downTotal != 0:
                   self.metricInfo.successVedioCnt = self.metricInfo.successVedioCnt + 1
 
-        self.clear()
+   
         return True
 
 
@@ -430,3 +403,6 @@ if __name__ == '__main__':
     logger.warn(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
     
     #merge_file("E:\\sourcecode\\download\\20230114_212551\\tsfile")
+    
+    
+

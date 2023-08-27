@@ -13,6 +13,9 @@ import requests
 from conf.systemconf import *
 from urllib.parse import urlencode
 
+from requests.auth import HTTPBasicAuth,HTTPDigestAuth
+from requests_ntlm import HttpNtlmAuth
+
 
 
 downloadCtrl = DownloadControl()
@@ -171,7 +174,10 @@ if __name__ == "__main__":
     logger.warn('now start')
     try:
       #main()
-      test2()
+            logger.warn(f'the vedio url')
+            response = requests.head("https://ev-ph.ypncdn.com/videos/201509/09/56921831/191127_1058_360P_360K_56921831_fb.mp4?validfrom=1692968814&amp;validto=1692976014&amp;rate=40k&amp;burst=300k&amp;hash=YpVi43ukRa4I2HAUVRxVkibZ2Hw%3D ",auth=HTTPDigestAuth("youporntbag", "ycx/8520/8520-+"))
+            file_size = response.headers.get('Content-Length')
+            logger.warn(f'the response:{response.text},{response.headers} {file_size}')
       #print(urlencode("REAL mom son | MOTHERLESS.COM ™"))
       
     except Exception as e:

@@ -5,12 +5,13 @@ import json
 
 class VedioUrl:
 
-   def __init__(self, id = '', name = '',url = '', country = '', descript = ''):
+   def __init__(self, id = '', name = '',url = '', country = '', descript = '', logo = ''):
         self.id = id 
         self.name = name
         self.url = url
         self.descript = descript
         self.country = country
+        self.logo = logo
 
    def toString(self):
       s = json.dumps(self.__dict__)
@@ -34,6 +35,7 @@ YOUTOBE = "www.youtube.com"
 INSTAGRAM = "www.instagram.com"
 
 default_urls = [
-                VedioUrl('66666', '我要吃瓜网','https://www.51cg4.com/', '中国', "我要吃瓜网最新网址"),
-                VedioUrl('8888', '8x8x网','https://81xane.top/', '中国', "各种老电影"),
+                VedioUrl('66666', '我要吃瓜网','https://www.51cg4.com/', '中国', "我要吃瓜网最新网址", "https://gitcode.net/ycx1225/vediodownarchive/-/raw/master/logoimgs/51cg.png?inline=false"),
+                
+                VedioUrl('8888', '8x8x网','https://81xane.top/', '中国', "各种老电影", "https://gitcode.net/ycx1225/vediodownarchive/-/raw/master/logoimgs/51cg.png?inline=false"),
                ]
