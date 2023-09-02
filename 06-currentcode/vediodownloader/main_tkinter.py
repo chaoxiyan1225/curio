@@ -5,6 +5,7 @@ import webbrowser
 import time
 import threading
 from tkinter import messagebox
+import tkinter as tk
 import utils.useruitool as UserUITool
 import utils.commontool as CommonTool
 from service.system_control import *
@@ -12,7 +13,7 @@ from service.user_control import *
 from service.downloader_control import *
 from conf.pictures import *
 from tkinter import filedialog
-import utils.logger as logger
+from utils.logger import *
 import conf.errors as Errors
 from io import BytesIO
 from conf.pictures_v3 import *
@@ -139,7 +140,6 @@ class App(customtkinter.CTk):
         self.register_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.register_frame.grid_columnconfigure((1), weight=1)
         self.register_frame.grid_rowconfigure((1), weight=0)
-
 
         rowNum = 1
         self.status_label =  customtkinter.CTkLabel(self.register_frame, corner_radius=0, height=30,  text=f"{STATUS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
@@ -287,13 +287,12 @@ class App(customtkinter.CTk):
                 if int(entry.grid_info()["column"] == 15):
                     entry.grid(row=currentR-1, column=15, columnspan=1, padx=(0,20), pady=(0,0), sticky="ew")
 
-            
     def check_register_valid(self):
         tel = self.tel_entry.get()        
         isValid = UserUITool.IsValidTel(tel)
 
         if isValid == False:
-            messagebox.showinfo(title="错误提示", message="输入的手机号非法")
+            messagebox.showinfo(title="WARNING", message="the telNum invalid!")
             self.tel_entry.configure(fg_color="red")
             return False
 
@@ -301,7 +300,7 @@ class App(customtkinter.CTk):
         isValid = UserUITool.IsValidEmail(email)
 
         if isValid == False:
-            messagebox.showinfo(title="错误提示", message="输入的邮箱非法") 
+            messagebox.showinfo(title="WARNING", message="the email invalid!!") 
             self.tel_entry.configure(fg_color="white") 
             self.email_entry.configure(fg_color="red")
             return False
@@ -318,13 +317,12 @@ class App(customtkinter.CTk):
         self.email_entry.configure(fg_color="white") 
         self.tel_entry.configure(fg_color="white")
 
-        #text, ok = QInputDialog.getText(self, '用户注册提示界面', '输入邮箱')
         isSend = self.userCtrl.clickToRegister(self.email_entry.get(), self.tel_entry.get())
         if isSend == Errors.SUCCESS:
-           messagebox.showinfo(self, "成功提示", "您的注册申请{成功}注意查收邮件") 
+           messagebox.showinfo(self, "SUCCESS", "please check message from your email!") 
            return True
 
-        messagebox.showinfo(self, "错误提示", "您的注册申请{失败}请稍后重试") 
+        messagebox.showinfo(self, "ERROR", "register error, please try later!") 
         return False
 
     def check_login_valid(self):
@@ -333,9 +331,9 @@ class App(customtkinter.CTk):
             return True
             
         result = self.sysCtrl.clientValid()
-        logger.warn(f'the client valid check {result.toString()}')
+        logger.warning(f'the client valid check {result.toString()}')
         if result == Errors.S_Forbidden:
-           messagebox.showinfo(title="错误提示", message="该版本的客户端已经禁止使用")
+           messagebox.showinfo(title="WARNING", message="this client is forbidden!")
            return False
            
         elif result == Errors.S_ClientFreeUse:
@@ -343,25 +341,25 @@ class App(customtkinter.CTk):
 
         result = self.userCtrl.LoginCheck()
         if result == Errors.C_InvalidUser:
-           messagebox.showinfo(title="错误提示", message="您还未注册，请点击右上角一键注册") 
+           messagebox.showinfo(title="WARNING", message="please register first!") 
            return False
 
         elif result == Errors.C_Arrearage:
-           messagebox.showinfo(title="错误提示", message="您已欠费请续费")
+           messagebox.showinfo(title="WARNING", message="you are incharge!")
            return
         elif result != Errors.SUCCESS:
-           messagebox.showinfo(title="错误提示", message="发生了未知错误请稍后重试")
+           messagebox.showinfo(title="WARNING", message="some unknown error happens!")
            return False
 
         result = self.sysCtrl.clientValid()
 
         if result == Errors.S_Forbidden:
-           messagebox.showinfo(title="错误提示", message="该版本的客户端已经禁止使用")
+           messagebox.showinfo(title="WARNING", message="this client is forbidden")
            self.preCheckResult = False
            return False
 
         elif result  != Errors.SUCCESS: 
-           messagebox.showinfo(title="错误提示", message="发生了未知错误请稍后重试")
+           messagebox.showinfo(title="WARNING", message="some unknown error happens, please try later!")
            self.preCheckResult = False 
            return False
 
@@ -389,34 +387,33 @@ class App(customtkinter.CTk):
     def start_downLoad(self):
         urls = self.parse_allUrls()
         if len(urls) == 0:
-           messagebox.showinfo(title="严重", message="必须输入一个网址！") 
+           messagebox.showinfo(title="WARNING", message="you must input one website at least!") 
            return
         
         for url in urls:
             isValid = UserUITool.IsValidUrl(url)
             if isValid == False:
-               messagebox.showinfo(title="严重", message="输入url不合法！") 
+               messagebox.showinfo(title="WARNING", message="the url input invalid!") 
                self.is_need_stop = True
                return
 
-        #isValid = self.CheckValid()
-        #if isValid == False:
-        #   return        
+        if self.CheckValid() == False:
+           return        
         
         savePath = self.save_entry.get() 
         if savePath == None or savePath.strip() == '':
            self.save_entry.configure(fg_color="red")
-           messagebox.showinfo(title="严重", message="您必须选择一个保存路径！") 
+           messagebox.showinfo(title="WARNING", message="you should chose a path to save vedio!") 
            return 
         else:
            self.save_entry.configure(fg_color="white")
            
         if not os.path.exists(savePath):
            self.save_entry.configure(fg_color="red")
-           messagebox.showinfo(title="严重", message="您选择的路径不存在！") 
+           messagebox.showinfo(title="WARNING", message="the path is not exist") 
            return 
         
-        logger.warn(f'excute the downloader backgroud!')
+        logger.warning(f'excute the downloader backgroud!')
         
         self.is_need_stop = False
         self.downloadCtrl = DownloadControl()
@@ -431,7 +428,7 @@ class App(customtkinter.CTk):
             self.downloadCtrl.downLoad_start(urls, savePath)
         except Exception as e1:
             logger.error(f"the input url:{urls} download fail, and error msg: {str(e1)}")
-            messagebox.showinfo(title="严重", message="下载出现问题请稍后重试") 
+            messagebox.showinfo(title="WARNING", message="some error happens when downloading!") 
             #self.is_need_stop = True
             logging.exception(e1)
             self.downloadCtrl.clear()
@@ -446,12 +443,12 @@ class App(customtkinter.CTk):
             self.set_frame_view(metricInfo)
 
             if metricInfo.totalVedioCnt > 0 and metricInfo.totalFailCnt + metricInfo.totalSuccessCnt >= metricInfo.totalVedioCnt:
-               logger.warn(f"have  down load finish, {metricInfo.to_string()}")
+               logger.warning(f"have  down load finish, {metricInfo.to_string()}")
                self.is_need_stop = True
                break
                
             if not self.downloadCtrl.downloading:
-               logger.warn(f'the downloader finish')
+               logger.warning(f'the downloader finish')
                break
           
             time.sleep(10)
@@ -460,7 +457,7 @@ class App(customtkinter.CTk):
         currMetric = metricInfo.currentMetricInfo
         percent = currMetric.percentCurrent
 
-        logger.warn(f'currentProgress:{percent}')
+        logger.warning(f'currentProgress:{percent}')
         self.progressbar.set(percent/100)
         
         inP = "Yes"
@@ -477,7 +474,7 @@ class App(customtkinter.CTk):
 
     def async_load_urls(self):
         table = []
-        row = []  #row里面加满一行的就添加到上面的table里，使table成为一个二维列表。
+        row = [] 
         
         remoteUrls = self.sysCtrl.getAllUrlsArray()
         urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
@@ -495,39 +492,13 @@ class App(customtkinter.CTk):
             tmp_button = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=40, border_spacing=10, text=urlInfo.name, fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=tmp_img, anchor="w", command=lambda: self.for_more_url(urlInfo.url))
             
             tmp_button.grid(row=rNum,column=r%3, padx=20, pady=20) 
-            logger.warn(f'the row {rNum}, column:{r%3}')
+            logger.warning(f'the row {rNum}, column:{r%3}')
             row.append(tmp_button)
                 
             if r % 3 ==0 and r > 0:
                table.append(row)
-               rNum = rNum + 1               
-
+               rNum = rNum + 1
             
-            #widget = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=60, border_spacing=10, text="点击详情",command=lambda: self.for_more_url(tmpUrl) ,
-            #                                          fg_color="transparent", text_color=("green", "green"), hover_color=("gray70", "gray30"),
-            #                                          anchor="w")
-                                                      
-            #widget.grid(row=r,column=c, padx=20, pady=20, sticky="nsew") 
-        
-        ##加个表头试一下
-        #for t in field:
-        #    table[0][field.index(t)].configure(
-        #                    textvariable=customtkinter.StringVar(value=t)
-        #                    )
-       
-       
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-    #CommonTool.convert_pathPic_pyFile("imgs", "pictures_v3")
-
-        # remoteUrls = SoftWareContrl().getAllUrlsArray()
-        # urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
-
-        # print(urls)
-        # field = []
-        # c = 0 
-        # for r in range(len(urls)):
-        #     attrs = vars(urls[r])
-        #     for attr, value in attrs.items():
-        #         print(f'{attr}, {value}')
