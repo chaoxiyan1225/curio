@@ -70,6 +70,7 @@ class App(customtkinter.CTk):
         
         self.userCtrl = UserContrl()
         self.sysCtrl = SoftWareContrl()
+        self.LoginValid = False
          
         # init images
         self.__initImg__()
@@ -397,7 +398,7 @@ class App(customtkinter.CTk):
                self.is_need_stop = True
                return
 
-        if self.CheckValid() == False:
+        if self.check_login_valid() == False:
            return        
         
         savePath = self.save_entry.get() 

@@ -225,7 +225,11 @@ class  MP4TSDownloader(CommonDownloader):
         os.mkdir(self.download_ts)
         
         all_content = requests.get(url, headers = headers).text
-        m3u8File = self.download_ts + f"\site.m3u8" 
+        
+        
+        father = os.path.join(self.download_ts, os.pardir)
+        m3u8File = father+ f"\site.m3u8" 
+        
         logger.warn(f'm3u8save path: {m3u8File}')
         
         with open(m3u8File, "wb") as file:
@@ -274,14 +278,6 @@ class  MP4TSDownloader(CommonDownloader):
         if len(allTsFiles) > 0:
            self.merge_ts_2_mp4(mp4Name)
          
-    
-    def merge_file(self, tsPath):
-        os.chdir(tsPath)
-        cmd = "copy /b * new.tmp"
-        os.system(cmd)
-        os.system('del /Q *.ts')
-        os.system('del /Q *.mp4')
-        os.rename("new.tmp", "new.mp4")
         
     def merge_ts_2_mp4(self, mp4FileName:str)->None:
         def ts2MP4(tsPath:str, mp4FileName:str)->bool:
@@ -294,6 +290,7 @@ class  MP4TSDownloader(CommonDownloader):
                
             return True
             
+        
         fs = os.listdir(self.download_ts)
         fs.sort(key= lambda x:int(x[:-3]))
         
@@ -324,6 +321,7 @@ class  MP4TSDownloader(CommonDownloader):
         father = os.path.join(self.download_ts, os.pardir)
         os.chdir(father)
         os.system('del /Q *.m3u8')
+        
         
     def clear(self):
         #os.rmdir(self.download_ts)
@@ -362,6 +360,7 @@ class  MP4TSDownloader(CommonDownloader):
             self.downSuccess = 0
             self.downTotal = 0
             count = count + 1
+            self.key = None
             self.ts_download_1By1(m3u8Url, f'{self.vedioName}_{count}')
             time.sleep(15)  
             self.clear()
