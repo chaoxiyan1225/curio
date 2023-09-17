@@ -10,7 +10,7 @@ from retry import retry# 导入 retry 库以方便进行下载出错重试
 from bs4 import BeautifulSoup
 import logging
 
-import utils.logger as logger
+from utils.logger import *
 
 signal.signal(signal.SIGINT, multitasking.killall)
 from Crypto.Util.Padding import pad

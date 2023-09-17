@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from requests.auth import HTTPBasicAuth
 
 
-import utils.logger as logger
+from utils.logger import *
 import utils.commontool as CommonTool
 import shutil
 

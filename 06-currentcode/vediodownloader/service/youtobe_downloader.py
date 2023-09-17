@@ -12,14 +12,14 @@ class YoutubeDownloader(CommonDownloader):
     def clear(self):
         return
     
-    def progress_set(stream = None, chunk = None, file_handle = None, remaining = None):
-        filesize = chunk.filesize
-        current = ((filesize - remaining)/filesize)
+    def on_progress(self, stream, chunk, bytes_remaining):
+        total = stream.filesize
+        current = ((total - bytes_remaining)/total)
         percent = ('{0:.1f}').format(current*100)
         progress = int(50*current)
         
-        self.downTotal = filesize
-        self.downSuccess = filesize - remaining
+        self.downTotal = total
+        self.downSuccess = total - bytes_remaining
        
     def get_percent_current(self):
         fenMu = 1000000 if self.downTotal==0 else self.downTotal
@@ -33,12 +33,11 @@ class YoutubeDownloader(CommonDownloader):
         try:
             logger.warn(f"youtube downloader start download from  {self.url}")
             self.init()
-            yt=YouTube(self.url, on_progress_callback = self.progress_set)
+            yt=YouTube(self.url, on_progress_callback = self.on_progress)
         except Exception as e:
-            logger.error("[ERROR      ] {0}".format(str(e)).encode("utf-8"))
+            logger.error("[ERROR] {0}".format(str(e)).encode("utf-8"))
             return -1
         
-
         pattern = r'[\/.:*?"<>|]+'
         regex = re.compile(pattern)
         filename = regex.sub('',yt.title).\
@@ -48,6 +47,8 @@ class YoutubeDownloader(CommonDownloader):
 
         p=Path(self.download_path)
         mp4Path = p / self.vedioName
+        
+        logger.warn(f"the path {mp4Path}")
 
         if mp4Path.exists():
             logger.warn("[SKIP]".format(mp4Path))
@@ -59,7 +60,7 @@ class YoutubeDownloader(CommonDownloader):
 
         while current < RETRY_TIME:
             try:   
-                logger.warn("youtube downloader [DOWNLOAD] {0}".format(self.vedioName))
+                logger.warn("youtube downloader [DOWNLOAD] {0}".format(self.vedioName).format(mp4Path))
                 yt.streams.filter(subtype='mp4',progressive=True)\
                         .order_by('resolution')\
                         .desc()\

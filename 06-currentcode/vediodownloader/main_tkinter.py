@@ -11,17 +11,18 @@ import utils.commontool as CommonTool
 from service.system_control import *
 from service.user_control import *
 from service.downloader_control import *
+from conf.systemconf import *
 from conf.pictures import *
 from tkinter import filedialog
 from utils.logger import *
 import conf.errors as Errors
 from io import BytesIO
-from conf.pictures_v3 import *
+from conf.pictures_v4 import *
 import requests
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
-PROGRESS_INFO = "【下载详情】共UU个链接,正在下载第:CC个链接,本链接共有:TT个视频,已下载成功:SS个,失败:FF,是否下载完成:YY  "
+PROGRESS_INFO = "【下载详情】共UU个链接,正在下载第CC个链接,本链接共有TT个视频,已下载成功SS个,失败FF,是否下载完成:YY  "
 
 STATUS_INFO = "【NOTES】:您当前处于:cc, ss!"
 
@@ -59,7 +60,7 @@ class App(customtkinter.CTk):
         #self.iconbitmap('logo.ico')
         #将import进来的icon.py里的数据转换成临时文件tmp.ico，作为图标
         tmp = open('tmp.ico', 'wb+')
-        tmp.write(logo_2_ico)
+        tmp.write(logo_ico)
         tmp.close()
         self.iconbitmap('tmp.ico')
         os.remove('tmp.ico')
@@ -82,14 +83,23 @@ class App(customtkinter.CTk):
 
         self.navigation_frame_label = customtkinter.CTkLabel(self.navigation_frame, text=" BestVedioDownloader", image=self.logo_image,  compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.navigation_frame_label.grid(row=0, column=0, padx=20, pady=20)
+        #download 
+        tmpR = 1
         self.download_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="DownLoad", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.download_img, anchor="w", command=self.download_button_event)
-        self.download_button.grid(row=1, column=0, sticky="ew")
+        self.download_button.grid(row=tmpR, column=0, sticky="ew")
+        #getlatest version
+        self.latest_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="GetLatest", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.more_img, anchor="w", command=self.latest_button_event)
+        self.latest_button.grid(row=tmpR+1, column=0, sticky = "ew")
+        #shares website
         self.shares_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Shares", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.shares_button_event)
-        self.shares_button.grid(row=2, column=0, sticky = "ew")
+        self.shares_button.grid(row=tmpR+2, column=0, sticky = "ew")
+        #register frame
         self.register_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Register", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.register_img, anchor="w", command=self.register_button_event)
-        self.register_button.grid(row=3, column=0, sticky="ew")
+        self.register_button.grid(row=tmpR+3, column=0, sticky="ew")
+        #aboutus  
         self.aboutus_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="AboutUs", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.aboutus_img, anchor="w", command=self.aboutus_button_event)
-        self.aboutus_button.grid(row=4, column=0, sticky="ew")
+        self.aboutus_button.grid(row=tmpR+4, column=0, sticky="ew")
+        #language frame
         self.language_label =  customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=30, border_spacing=10, text="Language Select:", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), anchor="w")
         self.language_label.grid(row=7, column=0, padx=20, pady=(10, 0) )
         self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame, values=["中文", "English", "Spnish"], command=self.change_language_event)
@@ -101,9 +111,7 @@ class App(customtkinter.CTk):
         self.download_frame.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), weight=1)
         self.download_frame.grid_rowconfigure((0,1,3,4,5,6,7,8,9), weight=1)
 
-        self.info_label =  customtkinter.CTkLabel(self.download_frame,corner_radius=0, height=15,  text="视频网址:",
-                                                       fg_color="transparent", text_color=("gray10", "gray90"),
-                                                      anchor="w")
+        self.info_label =  customtkinter.CTkLabel(self.download_frame,corner_radius=0, height=15,  text="视频网址:",fg_color="transparent", text_color=("gray10", "gray90"),anchor="w")
         self.info_label.grid(row=1, column=0, padx=(20,0), pady=(0,0))
 
         self.more_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text="获取网址", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.more_button_event)
@@ -119,20 +127,34 @@ class App(customtkinter.CTk):
         self.start_down_button.grid(row=2, column=15, columnspan=1, padx=(0,10), pady=(0,0))
         
         self.current_row = 2
-       
-        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="请选择路径")
-        self.save_entry.grid(row=11, column=0, padx=(20,0), columnspan=15, pady=0, sticky="ew")
+        
+        tmpR = 10
+        
+        self.progressbar = customtkinter.CTkProgressBar(self.download_frame, height= 30)
+        self.progressbar.grid(row=tmpR, column=0, columnspan=14, padx=(20,10), pady=(0, 10), sticky="nsew")
+        self.progressbar.set(0.01)
+        
+        self.current_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"当前进度 0%", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.current_label.grid(row=tmpR, column=14, columnspan=3, padx=(20,0), pady=(0, 0), sticky="nsew")
+        
+        self.progress_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"{PROGRESS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
+        self.progress_label.grid(row=tmpR + 1, column=0, columnspan=16, padx=(20,0), pady=(0, 0), sticky="nsew")
         
         self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=10, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.select_path)
-        self.buttonOpen.grid(row=11, column=15, columnspan=1, padx=(0,0), pady=0)
-
-        self.progress_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"{PROGRESS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
-        self.progress_label.grid(row=12, column=0, columnspan=16, padx=(20,0), pady=(0, 0), sticky="nsew")
-        self.progressbar = customtkinter.CTkProgressBar(self.download_frame, height= 30)
-        self.progressbar.grid(row=13, column=0, columnspan=16, padx=(20,10), pady=(0, 10), sticky="nsew")
-        self.progressbar.set(0.01)
-
-        # # create shares frame
+        self.buttonOpen.grid(row=tmpR + 2, column=15, columnspan=1, padx=(0,0), pady=0)
+        
+        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="请选择路径")
+        self.save_entry.grid(row=tmpR + 2, column=0, padx=(20,0), columnspan=15, pady=0, sticky="ew")
+        
+        self.tmp_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
+        self.tmp_label.grid(row=tmpR + 3, column=0, columnspan=3, padx=(20,0), pady=(0, 0), sticky="nsew")
+        
+        #getLatest frame 
+        self.latest_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self.latest_frame.grid_columnconfigure((1), weight=1)
+        self.latest_frame.grid_rowconfigure((1), weight=0)
+        
+        #create shares frame
         self.shares_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.shares_frame.grid_columnconfigure((1), weight=1)
         self.shares_frame.grid_rowconfigure((1), weight=0)
@@ -146,24 +168,19 @@ class App(customtkinter.CTk):
         self.status_label =  customtkinter.CTkLabel(self.register_frame, corner_radius=0, height=30,  text=f"{STATUS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
         self.status_label.grid(row=rowNum, column=0, columnspan=5, padx=(40,0), pady=(10, 0), sticky="nsew")
 
-        self.tel_label = customtkinter.CTkLabel(self.register_frame, text="TelNum:", compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.tel_label = customtkinter.CTkLabel(self.register_frame, text="Your Telnum", compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.tel_label.grid(row=rowNum+1, column=0, padx=(0,0), pady=(20,10))
         self.tel_entry = customtkinter.CTkEntry(self.register_frame, width = 50, placeholder_text="please input telNum")
-        self.tel_entry.grid(row=rowNum+1, column=1, columnspan=4,sticky="nsew", padx=(5,5), pady=(20,10))
-        self.tel_info_label = customtkinter.CTkLabel(self.register_frame, text="* Give me your tel exactly", compound="left", font=customtkinter.CTkFont(size=15))
-        self.tel_info_label.grid(row=rowNum+1, column=5, padx=(0,20), pady=(20,10))
-        self.email_label = customtkinter.CTkLabel(self.register_frame, text="Email:", compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.tel_entry.grid(row=rowNum+1, column=1, columnspan=10, padx=(0,300), pady=(20,10),sticky="nsew")
+
+        self.email_label = customtkinter.CTkLabel(self.register_frame, text="Your  Email", compound="left", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.email_label.grid(row=rowNum+2, column=0, padx=(0,0), pady=10)
         self.email_entry = customtkinter.CTkEntry(self.register_frame, width =50, placeholder_text="please input email")
-        self.email_entry.grid(row=rowNum+2, column=1, columnspan=4,sticky="nsew", padx=(0,5), pady=10)
-        self.email_info_label = customtkinter.CTkLabel(self.register_frame, text="* Give me your Email exactly", compound="left", font=customtkinter.CTkFont(size=15))
-        self.email_info_label.grid(row=rowNum+2, column=5, padx=(0,20), pady=10)
-        
-        self.submit_button = customtkinter.CTkButton(self.register_frame, text="submit", command=self.register_submit_event, image=self.confirm_img)
-        self.submit_button.grid(row=rowNum+3, column=0, columnspan=1, padx=(60,0), pady=20)
-        self.VIP_button = customtkinter.CTkButton(self.register_frame, text="BeVIP", command=self.vip_button_event, image=self.more_img)
-        self.VIP_button.grid(row=rowNum+3, column=5, columnspan=1, padx=(0,20), pady=20)
+        self.email_entry.grid(row=rowNum+2, column=1, columnspan=10, padx=(0,300), pady=10,sticky="nsew")
 
+        self.submit_button = customtkinter.CTkButton(self.register_frame, text="register", command=self.register_submit_event, image=self.confirm_img)
+        self.submit_button.grid(row=rowNum+3, column=0, columnspan=1, padx=(60,0), pady=20)
+       
         #create textbox
         self.register_box = customtkinter.CTkTextbox(self.register_frame, width=600)
         self.register_box.grid(row=rowNum+5, column=0, columnspan=10, padx=(20, 20), pady=(20, 0), sticky="nsew")
@@ -184,6 +201,16 @@ class App(customtkinter.CTk):
                                                       image=self.back_img, anchor="w", command=self.download_button_event)
         self.back_button.grid(row=1, column = 0, padx=(20, 0), pady=(0, 20))
         
+        
+        # getlatest frame
+        self.textbox_latest = customtkinter.CTkTextbox(self.latest_frame, width=300, bg_color="blue")
+        self.textbox_latest.grid(row=0, column=0, columnspan=10, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.textbox_latest.insert("0.0", "Welcome!!!\n\n" + f"the current software version is {clientVersion}.\n\n\n")
+    
+        self.checkLatest_button = customtkinter.CTkButton(self.latest_frame, corner_radius=0, height=40, border_spacing=10, text="CheckLatest",fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),image=self.back_img, anchor="w", command=self.download_button_event)
+        
+        self.checkLatest_button.grid(row=1, column = 0, padx=(20, 0), pady=(0, 20))
+   
         self.is_need_stop = False
 
         # select default frame
@@ -197,8 +224,9 @@ class App(customtkinter.CTk):
         # set button color for selected button
         self.download_button.configure(fg_color=("gray75", "gray25") if name == "download" else "transparent")
         self.register_button.configure(fg_color=("gray75", "gray25") if name == "register" else "transparent")
-        self.aboutus_button.configure(fg_color=("gray75", "gray25") if name == "aboutus" else "transparent")
+        self.aboutus_button.configure(fg_color=("gray75", "gray25") if name == "aboutus" else "transparent")   
         self.shares_button.configure(fg_color=("gray75", "gray25") if name == "shares" else "transparent")
+        self.latest_button.configure(fg_color=("gray75", "gray25") if name == "latest" else "transparent")
 
         # show selected frame
         if name == "download":
@@ -218,6 +246,11 @@ class App(customtkinter.CTk):
             self.shares_frame.grid(row=0, column=1, sticky="nsew")
         else:
             self.shares_frame.grid_forget()
+        if name == "latest":
+            self.latest_frame.grid(row=0, column=1, sticky="nsew")
+        else:
+            self.latest_frame.grid_forget()    
+            
 
     def change_language_event(self):
         return
@@ -227,6 +260,9 @@ class App(customtkinter.CTk):
 
     def shares_button_event(self):
         self.select_frame_by_name("shares")
+    
+    def latest_button_event(self):
+        self.select_frame_by_name("latest")
 
     def register_button_event(self):
         self.select_frame_by_name("register")
@@ -243,9 +279,6 @@ class App(customtkinter.CTk):
     # to aboutus page view 
     def vip_button_event(self):
         webbrowser.open('https://chaoxiyan1225.github.io/business')
-
-    def for_more_url(self, url):
-        webbrowser.open(url)
 
     def change_appearance_mode_event(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -386,6 +419,8 @@ class App(customtkinter.CTk):
        return urls
 
     def start_downLoad(self):
+        self.progressbar.set(0.01)
+        
         urls = self.parse_allUrls()
         if len(urls) == 0:
            messagebox.showinfo(title="WARNING", message="you must input one website at least!") 
@@ -460,6 +495,8 @@ class App(customtkinter.CTk):
 
         logger.warning(f'currentProgress:{percent}')
         self.progressbar.set(percent/100)
+        info = f'当前进度 {percent}%'
+        self.current_label.configure(text=info)
         
         inP = "Yes"
         if currMetric.totalVedioCnt == 0:
@@ -481,25 +518,24 @@ class App(customtkinter.CTk):
         urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
         field = []
         rNum = 0
+       
         for r in range(len(urls)):
             urlInfo = urls[r]
-        
             res=requests.get(urlInfo.logo)
             with open("tmplogo" ,'wb') as f:
                 f.write(res.content)
                 
             tmp_img = customtkinter.CTkImage(light_image=Image.open("tmplogo"),dark_image=Image.open("tmplogo"), size=(PIC_SIZE, PIC_SIZE))
                         
-            tmp_button = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=40, border_spacing=10, text=urlInfo.name, fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=tmp_img, anchor="w", command=lambda: self.for_more_url(urlInfo.url))
+            tmp_button = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=40, border_spacing=10, text=urlInfo.name, fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=tmp_img, anchor="w", command=lambda: webbrowser.open(urlInfo.url))
             
             tmp_button.grid(row=rNum,column=r%3, padx=20, pady=20) 
-            logger.warning(f'the row {rNum}, column:{r%3}')
             row.append(tmp_button)
                 
             if r % 3 ==0 and r > 0:
                table.append(row)
                rNum = rNum + 1
-            
+                  
 if __name__ == "__main__":
     app = App()
     app.mainloop()

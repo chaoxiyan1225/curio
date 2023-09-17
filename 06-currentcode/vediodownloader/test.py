@@ -7,11 +7,15 @@ import utils.commontool as CommonTool
 from service.system_control import *
 from service.user_control import *
 from service.downloader_control import *
-import utils.logger as logger
+from utils.logger import *
 import yt_dlp    
 import requests
 from conf.systemconf import *
 from urllib.parse import urlencode
+import logging
+
+from pytube import YouTube
+import random
 
 from requests.auth import HTTPBasicAuth,HTTPDigestAuth
 from requests_ntlm import HttpNtlmAuth
@@ -23,7 +27,7 @@ downloadCtrl = DownloadControl()
 
 def gen_VedioInfos(url):
     
-        logger.warn(f'需要解析视频名以及含有的视频信息')
+        logger.warning(f'需要解析视频名以及含有的视频信息')
         current = 0
         vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
         delay = 5
@@ -50,7 +54,7 @@ def gen_VedioInfos(url):
            
                 mycount=0
                 for k in soup.find_all('a'):
-                    #logger.warn(k)
+                    #logger.warning(k)
                     link=k.get('href')
                     if(link is not None):
                         if link==invalidLink1:
@@ -94,7 +98,7 @@ def gen_VedioInfos(url):
                               if url and  '.mp4' in url:
                                  resultMp4.add(url)
                              
-                logger.warn(f'the vedioTile, the parse_subUrls {resultMp4}, {resultM3u8}')
+                logger.warning(f'the vedioTile, the parse_subUrls {resultMp4}, {resultM3u8}')
                 return vedioName, resultM3u8, resultMp4
      
             except Exception as e:
@@ -103,7 +107,7 @@ def gen_VedioInfos(url):
                 time.sleep(delay)
                 delay *= 2
                 
-        logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
+        logger.warning(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
         return vedioName, resultM3u8, resultMp4
 
            
@@ -124,15 +128,15 @@ def inside_thread():
                time.sleep(5)
                continue
             
-            logger.warn(f'the current percent: {metricInfo.currentMetricInfo.percentCurrent}')
+            logger.warning(f'the current percent: {metricInfo.currentMetricInfo.percentCurrent}')
 
             if metricInfo.totalVedioCnt > 0 and metricInfo.totalFailCnt + metricInfo.totalSuccessCnt >= metricInfo.totalVedioCnt:
-               logger.warn(f"have  down load finish, {metricInfo.to_string()}")
+               logger.warning(f"have  down load finish, {metricInfo.to_string()}")
                is_need_stop = True
                break
                
             if not downloadCtrl.downloading:
-               logger.warn(f'the downloader finish')
+               logger.warning(f'the downloader finish')
                break
           
             time.sleep(10)
@@ -168,19 +172,52 @@ def test2():
       if re.match(re_mp4, c): 
          print(c)
    
-   
+
+
+def downLoader_ytb(link):
+        yt = None
+        try:
+            logger.warning(f"youtube downloader start download from  {link}")
+            yt=YouTube(link, use_oauth=False)
+        except Exception as e:
+            logger.error("[ERROR] {0}".format(str(e)).encode("utf-8"))
+            return -1
+        
+        pattern = r'[\/.:*?"<>|]+'
+        regex = re.compile(pattern)
+        #filename = regex.sub('',yt.title).\
+        #                replace('\'','').replace('\\','')+".mp4"
+        
+       
+        mp4Path = "E:\sourcecode\download"
+        
+        logger.warning(f"the path {mp4Path}")
+
+        
+        current = 0
+      
+        while current < 1:
+            try:   
+                logger.warning("youtube downloader [DOWNLOAD] {0}")
+                yt.streams.filter(subtype='mp4',progressive=True)\
+                        .order_by('resolution')\
+                        .desc()\
+                        .first().download(mp4Path)
+                
+                current = current + 1 
+              
+                logger.warning("youtube download success")
+                
+                return True
+            except Exception as e:
+                logger.error(f"the youtube download error, {current} time".format(str(e)).encode("utf-8"))
+                logging.exception(e)
+
+
+        return False
+        
    
 if __name__ == "__main__":
-    logger.warn('now start')
-    try:
-      #main()
-            logger.warn(f'the vedio url')
-            response = requests.head("https://ev-ph.ypncdn.com/videos/201509/09/56921831/191127_1058_360P_360K_56921831_fb.mp4?validfrom=1692968814&amp;validto=1692976014&amp;rate=40k&amp;burst=300k&amp;hash=YpVi43ukRa4I2HAUVRxVkibZ2Hw%3D ",auth=HTTPDigestAuth("youporntbag", "ycx/8520/8520-+"))
-            file_size = response.headers.get('Content-Length')
-            logger.warn(f'the response:{response.text},{response.headers} {file_size}')
-      #print(urlencode("REAL mom son | MOTHERLESS.COM ™"))
-      
-    except Exception as e:
-      logger.error(f'the error happens: {str(e)}')
-    
-    logger.warn('end')
+    logger.warning('now start')
+    downLoader_ytb("https://www.youtube.com/watch?v=-fopYsgFdzc")
+    logger.warning('end')
