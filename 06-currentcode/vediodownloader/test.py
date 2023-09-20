@@ -8,7 +8,7 @@ from service.system_control import *
 from service.user_control import *
 from service.downloader_control import *
 from utils.logger import *
-import yt_dlp    
+from yt_dlp import YoutubeDL
 import requests
 from conf.systemconf import *
 from urllib.parse import urlencode
@@ -217,12 +217,19 @@ def downLoader_ytb(link):
         return False
 
 def down_ydl(link):
-  ydl_opts = {}
-  with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-    ydl.download(['https://www.youtube.com/watch?v=BaW_jenozKc'])
+    URLS = [link]
+    cnt = 0 
+    with YoutubeDL() as ydl:
+        while cnt < 3:
+            try:
+              cnt = cnt + 1
+              ydl.download(URLS)
+              break
+            except Exception as e:
+              logger.error(str(e))
         
    
 if __name__ == "__main__":
     logger.warning('now start')
-    downLoader_ytb("https://www.youtube.com/watch?v=-fopYsgFdzc")
+    down_ydl("https://www.youtube.com/watch?v=-fopYsgFdzc")
     logger.warning('end')
