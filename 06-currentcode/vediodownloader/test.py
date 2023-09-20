@@ -178,7 +178,7 @@ def downLoader_ytb(link):
         yt = None
         try:
             logger.warning(f"youtube downloader start download from  {link}")
-            yt=YouTube(link, use_oauth=False)
+            yt=YouTube(link, use_oauth=True, allow_oauth_cache=False)
         except Exception as e:
             logger.error("[ERROR] {0}".format(str(e)).encode("utf-8"))
             return -1
@@ -228,8 +228,23 @@ def down_ydl(link):
             except Exception as e:
               logger.error(str(e))
         
+        
+def down_ydl(link):
+    URLS = [link]
+    cnt = 0 
+    with YoutubeDL() as ydl:
+        while cnt < 3:
+            try:
+              cnt = cnt + 1
+              ydl.download(URLS)
+              break
+            except Exception as e:
+              logger.error(str(e))
+          
+            
    
 if __name__ == "__main__":
     logger.warning('now start')
     down_ydl("https://www.youtube.com/watch?v=-fopYsgFdzc")
+
     logger.warning('end')
