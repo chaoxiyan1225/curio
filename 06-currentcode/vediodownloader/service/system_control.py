@@ -104,6 +104,11 @@ class SoftWareContrl:
              logger.warn(f'parse software fail , exception : {str(e)} and contack QQ :{SystemConf.contackQQ} or  {SystemConf.email} ')
              return None, Errors.S_ParseFail
 
+   def getLatestVersionFromS(self):   
+      softWareConf, error = self.loadSoftWareInfoFromGit()
+      return softWareConf.currentVersion
+      
+
    '''
      加载软件的一些基本信息使用软件的有效期限
    '''

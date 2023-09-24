@@ -25,6 +25,9 @@ contackQQ = '59478148'
 email = 'chaoxiyan1225@163.com'
 newSoftWareZip = ''
 clientVersion = '1.0.6' # 客户端的版本号，随着时间递增，这个值会不断变化，不会超过服务端的值
+
+softwaredownload = 'https://gitcode.net/ycx1225/softwares'
+
 emailFrom = email
 emailPwd = 'VxqRl8Zr1ekcTvzxSndoUw=='
 emailSender = 'SPEEEEEEED'

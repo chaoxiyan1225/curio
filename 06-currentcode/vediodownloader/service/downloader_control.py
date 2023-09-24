@@ -51,16 +51,16 @@ class  DownloadControl:
     初始化函数，创建临时路径等
     '''
     def init(self, savePath):
-        logger.warn(f'------downloadContrl init:start-----------')
-        
+        logger.warning(f'------downloadContrl init:start-----------')
         self.totalMetricInfo = TotalMetricInfo()
     
         if savePath != None and savePath != "":
            self.download_path = savePath.replace("/", "\\")
         else:
            self.download_path = os.getcwd()
-        
-        logger.warn(f'------downloadContrl init:end-----------')
+           
+           
+        logger.warning(f'------downloadContrl init:end-----------')
 
     def get_total_metrics(self):
     

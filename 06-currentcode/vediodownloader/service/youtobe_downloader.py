@@ -3,6 +3,7 @@ import re
 from pytube import YouTube
 from pathlib import Path
 from service.common_downloader import *
+from yt_dlp import YoutubeDL
 
 class YoutubeDownloader(CommonDownloader):
 
@@ -12,68 +13,47 @@ class YoutubeDownloader(CommonDownloader):
     def clear(self):
         return
     
-    def on_progress(self, stream, chunk, bytes_remaining):
-        total = stream.filesize
-        current = ((total - bytes_remaining)/total)
-        percent = ('{0:.1f}').format(current*100)
-        progress = int(50*current)
-        
-        self.downTotal = total
-        self.downSuccess = total - bytes_remaining
-       
-    def get_percent_current(self):
-        fenMu = 1000000 if self.downTotal==0 else self.downTotal
-        return int((self.downSuccess * 100) / fenMu)
-  
     def get_metric(self):
-        self.metricInfo.percentCurrent = self.get_percent_current()
-        return self.metricInfo    
+        return self.metricInfo  
 
+    def ydl_hook(self, d):
+        #logger.warning(d)
+        if d['status'] == 'finished':
+           self.metricInfo.percentCurrent = 100
+            
+        if d['status'] == 'downloading':
+           totalSize = 1
+           
+           if 'total_bytes' in d:
+               totalSize = d['total_bytes']
+           elif 'total_bytes_estimate' in d:
+               totalSize = d['total_bytes_estimate']
+               
+           p = d['downloaded_bytes']/ totalSize
+           self.metricInfo.percentCurrent = (int)(p * 100)
+     
     def downLoad_start(self):
-        try:
-            logger.warn(f"youtube downloader start download from  {self.url}")
-            self.init()
-            yt=YouTube(self.url, on_progress_callback = self.on_progress)
-        except Exception as e:
-            logger.error("[ERROR] {0}".format(str(e)).encode("utf-8"))
-            return -1
+        URLS = [self.url]
+        ydl_opts = {
+        'logger': logger,
+        'progress_hooks': [self.ydl_hook],
+        'outtmpl': self.download_path + '\\'+f'%(title)s.%(ext)s',
+        }
         
-        pattern = r'[\/.:*?"<>|]+'
-        regex = re.compile(pattern)
-        filename = regex.sub('',yt.title).\
-                        replace('\'','').replace('\\','')+".mp4"
-        
-        self.vedioName = filename if filename else self.gen_vedio_name()
-
-        p=Path(self.download_path)
-        mp4Path = p / self.vedioName
-        
-        logger.warn(f"the path {mp4Path}")
-
-        if mp4Path.exists():
-            logger.warn("[SKIP]".format(mp4Path))
-            return 0
-        
-        current = 0
-        self.downTotal = 1
-        self.totalVedioCnt = 1
-
-        while current < RETRY_TIME:
-            try:   
-                logger.warn("youtube downloader [DOWNLOAD] {0}".format(self.vedioName).format(mp4Path))
-                yt.streams.filter(subtype='mp4',progressive=True)\
-                        .order_by('resolution')\
-                        .desc()\
-                        .first().download(mp4Path)
-                
-                current = current + 1 
-                self.downSuccess = self.downTotal
-                logger.warn("youtube download success".format(self.vedioName))
-                self.successVedioCnt = 1                
-                return True
-            except Exception as e:
-                logger.error(f"the youtube download error, {current} time".format(str(e)).encode("utf-8"))
-                logging.exception(e)
-                self.failVedioCnt = 1
+        logger.warning(f"youtube downloader start download from:{self.url}, and the opts:{ydl_opts}")
+        current = 0 
+        with YoutubeDL(ydl_opts) as ydl:
+            while current < RETRY_TIME:
+                try:
+                    logger.warning(f"[DOWNLOAD]:{current}")
+                    current = current + 1 
+                    ydl.download(URLS)
+                    logger.warning("finish")
+                    logger.warning("youtube download success".format(self.vedioName))           
+                    return True
+                except Exception as e:
+                    logger.error(f"the youtube download error, {current} time".format(str(e)).encode("utf-8"))
+                    logging.exception(e)
+                    self.failVedioCnt = 1
 
         return False

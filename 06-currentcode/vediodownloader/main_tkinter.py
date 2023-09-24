@@ -22,9 +22,9 @@ import requests
 
 PIC_SIZE = 30
 FRAME_NAMES = ["", "", ""]
-PROGRESS_INFO = "【下载详情】共UU个链接,正在下载第CC个链接,本链接共有TT个视频,已下载成功SS个,失败FF,是否下载完成:YY  "
+PROGRESS_INFO = "Total UU urls, now the CC url is downloading and there is TT vedio in the url,success SS,and FF failed,is finished?YY  "
 
-STATUS_INFO = "【NOTES】:您当前处于:cc, ss!"
+STATUS_INFO = "【WARNING】your information:cc, ss!"
 
 class App(customtkinter.CTk):
 
@@ -111,16 +111,16 @@ class App(customtkinter.CTk):
         self.download_frame.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), weight=1)
         self.download_frame.grid_rowconfigure((0,1,3,4,5,6,7,8,9), weight=1)
 
-        self.info_label =  customtkinter.CTkLabel(self.download_frame,corner_radius=0, height=15,  text="视频网址:",fg_color="transparent", text_color=("gray10", "gray90"),anchor="w")
+        self.info_label =  customtkinter.CTkLabel(self.download_frame,corner_radius=0, height=15,  text="website url:",fg_color="transparent", text_color=("gray10", "gray90"),anchor="w")
         self.info_label.grid(row=1, column=0, padx=(20,0), pady=(0,0))
 
-        self.more_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text="获取网址", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.more_button_event)
+        self.more_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text="More vedio website", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.more_button_event)
         self.more_button.grid(row=1, column=15, columnspan = 1)
     
         self.add_button =  customtkinter.CTkButton(self.download_frame, corner_radius=0, width=15,text="", fg_color="transparent",hover_color=("gray70", "gray30"), image=self.add_img, command=self.add_new)
         self.add_button.grid(row=2, column=0,padx=(0,0), columnspan=1, pady=(0, 0))
 
-        self.url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="请粘贴视频网址")
+        self.url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="Paste the vedio url")
         self.url_entry.grid(row=2, column=1, padx=(10,10), columnspan=14, pady=(0, 0),sticky="ew")
         
         self.start_down_button = customtkinter.CTkButton(self.download_frame, text="download", command=self.start_downLoad)
@@ -134,7 +134,7 @@ class App(customtkinter.CTk):
         self.progressbar.grid(row=tmpR, column=0, columnspan=14, padx=(20,10), pady=(0, 10), sticky="nsew")
         self.progressbar.set(0.01)
         
-        self.current_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"当前进度 0%", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.current_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"  ", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.current_label.grid(row=tmpR, column=14, columnspan=3, padx=(20,0), pady=(0, 0), sticky="nsew")
         
         self.progress_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"{PROGRESS_INFO}", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
@@ -143,7 +143,7 @@ class App(customtkinter.CTk):
         self.buttonOpen = customtkinter.CTkButton(self.download_frame, corner_radius=0, width=10, fg_color="transparent", text = " ", hover_color=("gray70", "gray30"), image=self.open_img, command=self.select_path)
         self.buttonOpen.grid(row=tmpR + 2, column=15, columnspan=1, padx=(0,0), pady=0)
         
-        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="请选择路径")
+        self.save_entry = customtkinter.CTkEntry(self.download_frame, width = 420,  placeholder_text="Select the path to save vedio")
         self.save_entry.grid(row=tmpR + 2, column=0, padx=(20,0), columnspan=15, pady=0, sticky="ew")
         
         self.tmp_label =  customtkinter.CTkLabel(self.download_frame, corner_radius=0, height=30,  text=f"", fg_color="transparent", text_color=("gray10", "gray90"), anchor="w")
@@ -205,9 +205,9 @@ class App(customtkinter.CTk):
         # getlatest frame
         self.textbox_latest = customtkinter.CTkTextbox(self.latest_frame, width=300, bg_color="blue")
         self.textbox_latest.grid(row=0, column=0, columnspan=10, padx=(20, 20), pady=(20, 20), sticky="nsew")
-        self.textbox_latest.insert("0.0", "Welcome!!!\n\n" + f"the current software version is {clientVersion}.\n\n\n")
+        self.textbox_latest.insert("0.0", "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\n\n")
     
-        self.checkLatest_button = customtkinter.CTkButton(self.latest_frame, corner_radius=0, height=40, border_spacing=10, text="CheckLatest",fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),image=self.back_img, anchor="w", command=self.download_button_event)
+        self.checkLatest_button = customtkinter.CTkButton(self.latest_frame, corner_radius=0, height=40, border_spacing=10, text="CheckLatest",fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),image=self.back_img, anchor="w", command=self.checkLatest_button_event)
         
         self.checkLatest_button.grid(row=1, column = 0, padx=(20, 0), pady=(0, 20))
    
@@ -266,6 +266,23 @@ class App(customtkinter.CTk):
 
     def register_button_event(self):
         self.select_frame_by_name("register")
+        
+    def checkLatest_button_event(self):
+        versionSLatest = self.sysCtrl.getLatestVersionFromS()
+        self.textbox_latest.delete("0.0", tk.END)
+        
+        if SystemConf.clientVersion not in versionSLatest:
+           messagebox.showinfo(title="WARNING", message="Your version is old, there is newer version!")
+          
+           self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\n and the newest version is V_{versionSLatest}, please visit:{SystemConf.softwaredownload} for it")
+           
+        else:
+           messagebox.showinfo(title="WARNING", message="Your version is the latest version!")
+           
+           self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\n and  You are in the newest version!")
+        
+        return
+        
 
     # to aboutus page view 
     def aboutus_button_event(self):
@@ -293,10 +310,10 @@ class App(customtkinter.CTk):
  
         if self.current_row > 4:
            self.current_row = self.current_row - 1
-           messagebox.showinfo(title="警告", message="只能支持同时下载三个视频链接") 
+           messagebox.showinfo(title="WARNING", message="You can download 3 vedio at most one time!") 
            return
            
-        url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="请粘贴视频网址")
+        url_entry = customtkinter.CTkEntry(self.download_frame, width = 380, placeholder_text="Paste the vedio url, first")
         url_entry.grid(row=self.current_row, column=1, padx=(10,10), columnspan=14, pady=(0, 0),sticky="ew")
         
         cha_button = customtkinter.CTkButton(self.download_frame, corner_radius=0, height=40, border_spacing=10, text=" ",
@@ -420,6 +437,7 @@ class App(customtkinter.CTk):
 
     def start_downLoad(self):
         self.progressbar.set(0.01)
+        self.current_label.configure(text=" ")
         
         urls = self.parse_allUrls()
         if len(urls) == 0:
@@ -495,7 +513,7 @@ class App(customtkinter.CTk):
 
         logger.warning(f'currentProgress:{percent}')
         self.progressbar.set(percent/100)
-        info = f'当前进度 {percent}%'
+        info = f' {percent}%'
         self.current_label.configure(text=info)
         
         inP = "Yes"
@@ -518,16 +536,20 @@ class App(customtkinter.CTk):
         urls = remoteUrls if remoteUrls and len(remoteUrls) > 0 else SystemConf.default_urls
         field = []
         rNum = 0
+        
+        logger.info(f'the urls suggest:{urls}')
        
         for r in range(len(urls)):
             urlInfo = urls[r]
             res=requests.get(urlInfo.logo)
             with open("tmplogo" ,'wb') as f:
                 f.write(res.content)
-                
+            logger.info(f'init log picture:{urlInfo.url}')
             tmp_img = customtkinter.CTkImage(light_image=Image.open("tmplogo"),dark_image=Image.open("tmplogo"), size=(PIC_SIZE, PIC_SIZE))
                         
             tmp_button = customtkinter.CTkButton(self.shares_frame, corner_radius=0, height=40, border_spacing=10, text=urlInfo.name, fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=tmp_img, anchor="w", command=lambda: webbrowser.open(urlInfo.url))
+            
+            #os.remove('tmplogo')
             
             tmp_button.grid(row=rNum,column=r%3, padx=20, pady=20) 
             row.append(tmp_button)

@@ -215,6 +215,7 @@ def downLoader_ytb(link):
 
 
         return False
+<<<<<<< HEAD
 
 def down_ydl(link):
     URLS = [link]
@@ -227,23 +228,70 @@ def down_ydl(link):
               break
             except Exception as e:
               logger.error(str(e))
+=======
+'''
+ |  progress_hooks:    A list of functions that get called on download
+ |                     progress, with a dictionary with the entries
+ |                     * status: One of "downloading", "error", or "finished".
+ |                               Check this first and ignore unknown values.
+ |                     * info_dict: The extracted info_dict
+ |
+ |                     If status is one of "downloading", or "finished", the
+ |                     following properties may also be present:
+ |                     * filename: The final filename (always present)
+ |                     * tmpfilename: The filename we're currently writing to
+ |                     * downloaded_bytes: Bytes on disk
+ |                     * total_bytes: Size of the whole file, None if unknown
+ |                     * total_bytes_estimate: Guess of the eventual file size,
+ |                                             None if unavailable.
+ |                     * elapsed: The number of seconds since download started.
+ |                     * eta: The estimated time in seconds, None if unknown
+ |                     * speed: The download speed in bytes/second, None if
+ |                              unknown
+ |                     * fragment_index: The counter of the currently
+ |                                       downloaded video fragment.
+ |                     * fragment_count: The number of fragments (= individual
+ |                                       files that will be merged)
+ |
+ |                     Progress hooks are guaranteed to be called at least once
+ |                     (with status "finished") if the download is successful.
+
+''' 
+
+def my_hook(d):
+    if d['status'] == 'finished':
+        logger.warning('Done downloading, now post-processing ...')
+>>>>>>> 3a6e7d8 (support youtube)
         
-        
+    if d['status'] == 'downloading':
+       p = d['downloaded_bytes']/d['total_bytes']
+       logger.warning(f'the current progress:{p}')
+    
+       
 def down_ydl(link):
     URLS = [link]
     cnt = 0 
-    with YoutubeDL() as ydl:
+    ydl_opts = {
+    'logger': logger,
+    'progress_hooks': [my_hook],
+    'outtmpl': 'C:\\Users\\orange\\gitproject\\curio\\06-currentcode\\'+f'%(title)s.%(ext)s',
+    }
+
+    with YoutubeDL(ydl_opts) as ydl:
         while cnt < 3:
             try:
               cnt = cnt + 1
+              logger.warning(f"start: {cnt}")
               ydl.download(URLS)
-              break
+              logger.warning("finish")
+              return
             except Exception as e:
               logger.error(str(e))
           
             
    
 if __name__ == "__main__":
+
     logger.warning('now start')
     down_ydl("https://www.youtube.com/watch?v=-fopYsgFdzc")
 

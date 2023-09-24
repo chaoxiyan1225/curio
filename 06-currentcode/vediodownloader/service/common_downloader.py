@@ -69,7 +69,7 @@ class  CommonDownloader(object):
         
         
     def __regMatch_vedioInfos__(self, content, resultM3u8, resultMp4):
-        logger.warn(f'now need to regmatch ')
+        logger.warning(f'now need to regmatch ')
         
         @multitasking.task
         def sub_match(strArr:list) -> None:
@@ -96,11 +96,11 @@ class  CommonDownloader(object):
         
         multitasking.wait_for_tasks()
         
-        logger.warn(f'the regmatch: {resultMp4}, {resultM3u8}')
+        logger.warning(f'the regmatch: {resultMp4}, {resultM3u8}')
 
     def gen_vedioInfos_v1(self):
     
-        logger.warn(f'need to parse vedio info')
+        logger.warning(f'need to parse vedio info')
         current = 0
         vedioName = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
         delay = 5
@@ -128,7 +128,7 @@ class  CommonDownloader(object):
            
                 mycount=0
                 for k in soup.find_all('a'):
-                    #logger.warn(k)
+                    #logger.warning(k)
                     link=k.get('href')
                     if(link is not None):
                         if link==invalidLink1:
@@ -162,7 +162,7 @@ class  CommonDownloader(object):
                   self.__regMatch_vedioInfos__(content, resultM3u8, resultMp4)
                    
                              
-                logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
+                logger.warning(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
                 return vedioName, resultM3u8, resultMp4
      
             except Exception as e:
@@ -171,7 +171,7 @@ class  CommonDownloader(object):
                 time.sleep(delay)
                 delay *= 2
                 
-        logger.warn(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
+        logger.warning(f'the vedioTile:{vedioName}, the parse_subUrls {resultMp4}, {resultM3u8}')
         return vedioName, resultM3u8, resultMp4
         
     def get_percent_current(self):
@@ -191,7 +191,7 @@ class  CommonDownloader(object):
         for index, url in enumerate(urlList):  
             taskMapNum = index % useThreadCnt
             taskList[taskMapNum][index] = url
-            #logger.warn("urlis :"+ url)
+            #logger.warning("urlis :"+ url)
             
         return useThreadCnt, len(urlList),taskList
         
