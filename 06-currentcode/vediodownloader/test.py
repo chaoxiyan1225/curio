@@ -215,20 +215,7 @@ def downLoader_ytb(link):
 
 
         return False
-<<<<<<< HEAD
 
-def down_ydl(link):
-    URLS = [link]
-    cnt = 0 
-    with YoutubeDL() as ydl:
-        while cnt < 3:
-            try:
-              cnt = cnt + 1
-              ydl.download(URLS)
-              break
-            except Exception as e:
-              logger.error(str(e))
-=======
 '''
  |  progress_hooks:    A list of functions that get called on download
  |                     progress, with a dictionary with the entries
@@ -261,7 +248,6 @@ def down_ydl(link):
 def my_hook(d):
     if d['status'] == 'finished':
         logger.warning('Done downloading, now post-processing ...')
->>>>>>> 3a6e7d8 (support youtube)
         
     if d['status'] == 'downloading':
        p = d['downloaded_bytes']/d['total_bytes']
@@ -288,8 +274,6 @@ def down_ydl(link):
             except Exception as e:
               logger.error(str(e))
           
-            
-   
 if __name__ == "__main__":
 
     logger.warning('now start')
