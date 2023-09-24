@@ -274,12 +274,12 @@ class App(customtkinter.CTk):
         if SystemConf.clientVersion not in versionSLatest:
            messagebox.showinfo(title="WARNING", message="Your version is old, there is newer version!")
           
-           self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\n and the newest version is V_{versionSLatest}, please visit:{SystemConf.softwaredownload} for it")
+           self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\nThe newest version is V_{versionSLatest}, please visit:{SystemConf.softwaredownload} for it")
            
         else:
            messagebox.showinfo(title="WARNING", message="Your version is the latest version!")
            
-           self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\n and  You are in the newest version!")
+           self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\nYou are in the newest version!")
         
         return
         
