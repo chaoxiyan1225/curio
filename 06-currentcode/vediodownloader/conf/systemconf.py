@@ -39,6 +39,13 @@ INSTAGRAM = "www.instagram.com"
 
 default_urls = [
                 VedioUrl('66666', '我要吃瓜网','https://www.51cg4.com/', '中国', "我要吃瓜网最新网址", "https://gitcode.net/ycx1225/vediodownarchive/-/raw/master/logoimgs/51cg.png?inline=false"),
-                
                 VedioUrl('8888', '8x8x网','https://81xane.top/', '中国', "各种老电影", "https://gitcode.net/ycx1225/vediodownarchive/-/raw/master/logoimgs/51cg.png?inline=false"),
                ]
+
+PAYPAL_URL = "http://1111111.com/"
+CBIBANK_URL = "http://8888888.com/"
+VISA_URL = "http://999999.com/"
+WECHAT_URL = "http://666666.com/"
+ZHIFUBAO_URL = "http://777777.com/"
+
+
