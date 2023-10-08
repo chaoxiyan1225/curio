@@ -91,18 +91,21 @@ class App(customtkinter.CTk):
         self.latest_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="GetLatest", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.more_img, anchor="w", command=self.latest_button_event)
         self.latest_button.grid(row=tmpR+1, column=0, sticky = "ew")
         #shares website
+        '''
         self.shares_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Shares", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.shares_img, anchor="w", command=self.shares_button_event)
         self.shares_button.grid(row=tmpR+2, column=0, sticky = "ew")
+        '''
         #register frame
         self.register_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Register", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.register_img, anchor="w", command=self.register_button_event)
         self.register_button.grid(row=tmpR+3, column=0, sticky="ew")
+        
         #aboutus
         self.aboutus_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="AboutUs", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), image=self.aboutus_img, anchor="w", command=self.aboutus_button_event)
         self.aboutus_button.grid(row=tmpR+4, column=0, sticky="ew")
         #language frame
         self.language_label =  customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=30, border_spacing=10, text="Language Select:", fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), anchor="w")
         self.language_label.grid(row=7, column=0, padx=20, pady=(10, 0) )
-        self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame, values=["中文", "English", "Spnish"], command=self.change_language_event)
+        self.language_optionemenu = customtkinter.CTkOptionMenu(self.navigation_frame, values=["English", "中文", "Spnish"], command=None)
         self.language_optionemenu.grid(row=8, column=0, padx=(0,20), pady=(0, 10))
 
         # download frame
@@ -203,13 +206,16 @@ class App(customtkinter.CTk):
 
 
         # getlatest frame
+       
         self.textbox_latest = customtkinter.CTkTextbox(self.latest_frame, width=300, bg_color="blue")
         self.textbox_latest.grid(row=0, column=0, columnspan=10, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        '''
         self.textbox_latest.insert("0.0", "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\n\n")
 
         self.checkLatest_button = customtkinter.CTkButton(self.latest_frame, corner_radius=0, height=40, border_spacing=10, text="CheckLatest",fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),image=self.back_img, anchor="w", command=self.checkLatest_button_event)
 
         self.checkLatest_button.grid(row=1, column = 0, padx=(20, 0), pady=(0, 20))
+        '''
 
         self.is_need_stop = False
 
@@ -217,15 +223,15 @@ class App(customtkinter.CTk):
         self.select_frame_by_name("download")
         self.change_appearance_mode_event("light")
 
-        t = threading.Thread(target=self.async_load_urls)
-        t.start()
+        #t = threading.Thread(target=self.async_load_urls)
+        #t.start()
 
     def select_frame_by_name(self, name):
         # set button color for selected button
         self.download_button.configure(fg_color=("gray75", "gray25") if name == "download" else "transparent")
         self.register_button.configure(fg_color=("gray75", "gray25") if name == "register" else "transparent")
         self.aboutus_button.configure(fg_color=("gray75", "gray25") if name == "aboutus" else "transparent")
-        self.shares_button.configure(fg_color=("gray75", "gray25") if name == "shares" else "transparent")
+        #self.shares_button.configure(fg_color=("gray75", "gray25") if name == "shares" else "transparent")
         self.latest_button.configure(fg_color=("gray75", "gray25") if name == "latest" else "transparent")
 
         # show selected frame
@@ -242,10 +248,12 @@ class App(customtkinter.CTk):
             self.aboutus_frame.grid(row=0, column=1, sticky="nsew")
         else:
             self.aboutus_frame.grid_forget()
+        '''      
         if name == "shares":
             self.shares_frame.grid(row=0, column=1, sticky="nsew")
         else:
             self.shares_frame.grid_forget()
+        '''
         if name == "latest":
             self.latest_frame.grid(row=0, column=1, sticky="nsew")
         else:
@@ -263,11 +271,12 @@ class App(customtkinter.CTk):
 
     def latest_button_event(self):
         self.select_frame_by_name("latest")
+        self.checkLatest_event()
 
     def register_button_event(self):
         self.select_frame_by_name("register")
 
-    def checkLatest_button_event(self):
+    def checkLatest_event(self):
         versionSLatest = self.sysCtrl.getLatestVersionFromS()
         self.textbox_latest.delete("0.0", tk.END)
 
@@ -278,7 +287,7 @@ class App(customtkinter.CTk):
 
            self.getLatest_button = customtkinter.CTkButton(self.latest_frame, corner_radius=0, height=40, border_spacing=10, text="GetLatest",fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),image=self.back_img, anchor="w", command=self.getLatest_button_event)
 
-           self.getLatest_button.grid(row=1, column = 1, padx=(20, 0), pady=(0, 20))
+           self.getLatest_button.grid(row=1, column = 0, padx=(20, 0), pady=(0, 20))
 
         else:
            self.textbox_latest.insert('0.0', "Welcome!!!\n\n" + f"Your software version is:V_{clientVersion}.\n\nYou are in the newest version!")
@@ -443,8 +452,9 @@ class App(customtkinter.CTk):
        return urls
 
     def start_downLoad(self):
-        self.progressbar.set(0.01)
+        self.progressbar.set(0.06)
         self.current_label.configure(text=" ")
+        self.download_button.configure(text="downloading")
 
         urls = self.parse_allUrls()
         if len(urls) == 0:

@@ -32,8 +32,7 @@ class  MP4TSDownloader(CommonDownloader):
 
     def init(self):
 
-        logger.warn(f'------init mp4 ts start-----------')
-        
+        logger.warning(f'------init start-----------')
         self.m3u8Urls = set()  # total vedios
         self.mp4Urls = set()   # total vedios
         
@@ -47,7 +46,7 @@ class  MP4TSDownloader(CommonDownloader):
         
         if self.vedioName == None:
            self.vedioName = nameTitle
-        logger.warn(f'------init mp4 ts end-----------')
+        logger.warning(f'------init mp4 ts end-----------')
 
 
     def get_percent_current(self):
@@ -81,9 +80,9 @@ class  MP4TSDownloader(CommonDownloader):
 
         def get_file_size(self, url: str, raise_error: bool = False) -> int:
         
-            logger.warn(f'the vedio url {url}')
+            logger.warning(f'the vedio url {url}')
             response = requests.head(url,auth=HTTPBasicAuth("youporntbag", "ycx/8520/8520-+"))
-            logger.warn(f'the response:{response.text}')
+            logger.warning(f'the response:{response.text}')
             file_size = response.headers.get('Content-Length')
             if file_size is None:
                 if raise_error is True:
@@ -97,10 +96,10 @@ class  MP4TSDownloader(CommonDownloader):
             file_size = self.get_file_size(url)
             
             if file_size < 1*MB:
-                logger.warn(f'the url:{url} may be ads vedio size :{file_size}')
+                logger.warning(f'the url:{url} may be ads vedio size :{file_size}')
                 return "adsVedio"
             
-            logger.warn(f'the file_size:{file_size}')
+            logger.warning(f'the file_size:{file_size}')
 
             @retry(tries=retry_times)
             @multitasking.task
@@ -141,7 +140,7 @@ class  MP4TSDownloader(CommonDownloader):
             session = requests.Session()
             each_size = min(each_size, file_size)
             parts = self.split(0, file_size, each_size)
-            logger.warn(f'共切分数：{len(parts)}, {parts}')
+            logger.warning(f'共切分数：{len(parts)}, {parts}')
             
             self.vedioDownLoader.downTotal = file_size
          
@@ -158,7 +157,7 @@ class  MP4TSDownloader(CommonDownloader):
 
     def download_tsFiles(self, urlList: list, retry_times: int = 3) -> None:
 
-        logger.warn(f'一共待下载的ts文件数：{len(urlList)}')
+        logger.warning(f'一共待下载的ts文件数：{len(urlList)}')
         self.downTotal = len(urlList)
        
         start = time.time()
@@ -209,7 +208,7 @@ class  MP4TSDownloader(CommonDownloader):
         ##bar.close()
         
         totalCost = (time.time() - start) / 60
-        logger.warn(f'下载任务结束，总计下载耗时:%.1f 分钟' % totalCost)
+        logger.warning(f'下载任务结束，总计下载耗时:%.1f 分钟' % totalCost)
 
 
     def mp4_download_1By1(self, url, mp4FileName):
@@ -230,7 +229,7 @@ class  MP4TSDownloader(CommonDownloader):
         father = os.path.join(self.download_ts, os.pardir)
         m3u8File = father+ f"\site.m3u8" 
         
-        logger.warn(f'm3u8save path: {m3u8File}')
+        logger.warning(f'm3u8save path: {m3u8File}')
         
         with open(m3u8File, "wb") as file:
              file.write(all_content.encode())
@@ -238,7 +237,7 @@ class  MP4TSDownloader(CommonDownloader):
         if "#EXTM3U" not in all_content:   
             raise BaseException("非M3U8的链接")
      
-        logger.warn(f'start decode ts files')
+        logger.warning(f'start decode ts files')
         unknow = True
         all_line = all_content.split("\n") 
         allTsFiles = []
@@ -247,7 +246,7 @@ class  MP4TSDownloader(CommonDownloader):
                 method_pos = line.find("METHOD")
                 comma_pos = line.find(",")
                 method = line[method_pos:comma_pos].split('=')[1]
-                logger.warn(f"Decode Method：{method}")
+                logger.warning(f"Decode Method：{method}")
 
                 if not self.key:
                    uri_pos = line.find("URI")
@@ -258,7 +257,7 @@ class  MP4TSDownloader(CommonDownloader):
                    res = requests.get(key_url)
                    self.key = res.content
                    
-                logger.warn(f'ts文件的加密 key:{self.key}')
+                logger.warning(f'ts文件的加密 key:{self.key}')
                 
             if "#" not in line and 'http' in line: # 找ts地址并下载
                 unknow = False
@@ -269,7 +268,7 @@ class  MP4TSDownloader(CommonDownloader):
             logger.error('not find ts ，程序异常')
 
         else:
-            logger.warn("ts文件的URL解析完成")
+            logger.warning("ts文件的URL解析完成")
         
         #mutilthread TS files
         self.download_tsFiles(allTsFiles, 3)
@@ -294,7 +293,7 @@ class  MP4TSDownloader(CommonDownloader):
         fs = os.listdir(self.download_ts)
         fs.sort(key= lambda x:int(x[:-3]))
         
-        logger.warn(f'compaction to mp4，TS cnt：{len(fs)}')
+        logger.warning(f'compaction to mp4，TS cnt：{len(fs)}')
         
         mp4Name = os.path.join(self.download_path, mp4FileName + ".mp4")
         mp4f = open(mp4Name, "ab")
@@ -308,14 +307,14 @@ class  MP4TSDownloader(CommonDownloader):
                   logger.error("ts2MP4 fail, filename:", tmp)
                   continue
             else:
-               logger.warn('other error')
+               logger.warning('other error')
                
         mp4f.close()
         ##bar.close()
         os.chdir(self.download_ts)
         os.system('del /Q *.ts')
         
-        logger.warn('compaction to mp4 finished')
+        logger.warning('compaction to mp4 finished')
         time.sleep(4)
         
         father = os.path.join(self.download_ts, os.pardir)
@@ -329,17 +328,17 @@ class  MP4TSDownloader(CommonDownloader):
         os.chdir(os.path.join(os.path.join(self.download_ts, os.pardir), os.pardir))
        
     def parse_all_vedios(self, url):
-        logger.warn(f'the input urls:{url}')
+        logger.warning(f'the input urls:{url}')
 
         url = url.strip()
         if url == None or url == "" or "http" not in url:
             return 
         
         if '.m3u8' in url:
-            logger.warn(f'input:{url} only one m3u8 file')
+            logger.warning(f'input:{url} only one m3u8 file')
             self.m3u8Urls.add(url)
         elif '.mp4' in url:
-            logger.warn(f'input:{url} only one mp4 file')
+            logger.warning(f'input:{url} only one mp4 file')
             self.mp4Urls.add(url)
 
     def downLoad_start(self):
@@ -350,7 +349,7 @@ class  MP4TSDownloader(CommonDownloader):
         self.parse_all_vedios(self.url)
         self.metricInfo.totalVedioCnt = len(self.m3u8Urls) + len(self.mp4Urls)
            
-        logger.warn(f'the url:{self.url} m3u8 cnt:{len(self.m3u8Urls)}, mp4 cnt:{len(self.mp4Urls)}, the vedioname: {self.vedioName}')
+        logger.warning(f'the url:{self.url} m3u8 cnt:{len(self.m3u8Urls)}, mp4 cnt:{len(self.mp4Urls)}, the vedioname: {self.vedioName}')
         
         logger.debug(f'the m3u8urls:{self.m3u8Urls}')
         logger.debug(f'the mp4ulrs:{self.mp4Urls}')        
@@ -389,7 +388,7 @@ class  MP4TSDownloader(CommonDownloader):
 
 if __name__ == '__main__': 
 
-    logger.warn(f'start----download')
+    logger.warning(f'start----download')
     start = time.time()
     downLoad = MP4TSDownloader()
     url = "https://cgcg1.com/archives/60127/" 
@@ -399,7 +398,7 @@ if __name__ == '__main__':
     
     totalCost = (end - start) / 60
     
-    logger.warn(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
+    logger.warning(f'线程数目:{default_thread_cnt}-总耗时:%.1f 分钟' % totalCost )
     
     #merge_file("E:\\sourcecode\\download\\20230114_212551\\tsfile")
     
