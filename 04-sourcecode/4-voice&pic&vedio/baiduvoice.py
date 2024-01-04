@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+ 使用百度语音库 把文字转为语音。使用场景是读书会等，估计微信的公众号的文章朗读也是基于此做的。
+'''
 
 import requests
 import json
