@@ -6,6 +6,8 @@
 
   文章参考 ： https://developer.aliyun.com/article/1066729
             https://www.zhihu.com/tardis/zm/art/342686109?source_id=1003  
+            https://zhuanlan.zhihu.com/p/566665446
+            
 '''
 
 from cnocr import CnOcr
