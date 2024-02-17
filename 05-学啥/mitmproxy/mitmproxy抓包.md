@@ -33,7 +33,8 @@ mitmproxy 是一组工具，为 HTTP/1、HTTP/2 和 WebSocket 提供交互式、
 # 不同环境下证书问题
 参考  [证书](https://earthly.dev/blog/mitmproxy/), 解决不同的证书问题
 
-# 
+# 抓小程序 
+https://www.cnblogs.com/hongdanni/p/13460698.html
 
 
 
