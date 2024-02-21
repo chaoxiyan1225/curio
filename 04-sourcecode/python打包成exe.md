@@ -21,6 +21,7 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller
 下面的路径要换成mac下的路径,路径是ico文件的绝对位置，在我们的工程里面就是 img/favicon.ico文件的位置
 
 pyinstaller -F -w -i g:\2345Downloads\logo.ico main.py 
+如果报 pyinstaller 不是可识别的命令，则需要把  C:\Users\orange\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\Scripts  设置到系统的环境变量里面
 
 解释：进入到cmd命令行中，然后cd到我们的项目代码所在的具体的目录，在项目代码所在的目录中，使用上述代码进行打包。
 
