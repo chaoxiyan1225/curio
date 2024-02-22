@@ -16,6 +16,8 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller
 
 （4）我们把这个get_shortest_distance.exe拖到和get_shortest_distance.py平级的目录，双击运行一下这个exe。
 
+参考  [打包详解](https://www.cnblogs.com/qhu-hjx/p/13036551.html)
+
 # 二、Python 打包可执行exe文件
 
 下面的路径要换成mac下的路径,路径是ico文件的绝对位置，在我们的工程里面就是 img/favicon.ico文件的位置
