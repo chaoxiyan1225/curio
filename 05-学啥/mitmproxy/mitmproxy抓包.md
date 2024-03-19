@@ -17,6 +17,9 @@ mitmproxy 不仅可以截获请求帮助开发者查看、分析，更可以通�
 >8. 实时生成用于拦截的 SSL / TLS 证书
 >还有更多……
 
+# 使用指南
+[链接](https://www.cnblogs.com/hongdanni/p/13460698.html)
+
 # 工具是开源
 参考链接 [链接](https://docs.mitmproxy.org/stable/)
 mitmproxy 是一组工具，为 HTTP/1、HTTP/2 和 WebSocket 提供交互式、支持 SSL/TLS 的拦截代理。
