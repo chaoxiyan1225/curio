@@ -4,7 +4,9 @@ FFmpeg是一套可以用来记录、转换数字音频、视频，并能将其�
 
 [使用指导文档](https://ffmpeg.xianwaizhiyin.net/base-ffmpeg/ffmpeg-mux.html)_
 
-[https://itsfoss.com/ffmpeg/](https://itsfoss.com/ffmpeg/)
+[linux下ffmpeg使用指导](https://itsfoss.com/ffmpeg/)
+
+[中文指导](https://ffmpeg.github.net.cn/ffmpeg.html)
 
 
 # 剔除视频中的水印：
